@@ -72,21 +72,18 @@ export class DropboxClient {
     return getTime; // Convert to timestamp
   }
 
-  async uploadFile(data: any, fileName: string) {
+  async uploadFile(path: string, contents: string | Buffer): Promise<void> {
     try {
-        const dbx = await authManager.getAuthorizedDropboxInstance();
-        const jsonBuffer = Buffer.from(JSON.stringify(data, null, 2));
-
-        await dbx.filesUpload({
-            path: `/folder/${fileName}`,
-            contents: jsonBuffer,
-            mode: { '.tag': 'overwrite' }
-        });
-
-        console.log(`Successfully uploaded ${fileName}`);
+      await this.dbx.filesUpload({
+        path: path,
+        contents: contents,
+        mode: { '.tag': 'overwrite' }
+      });
+      console.log(`Successfully uploaded file to ${path}`);
     } catch (error) {
-        console.error("Error uploading JSON to Dropbox:", error);
-        throw error;
+      console.error("Error uploading file to Dropbox:", error);
+      throw error;
     }
-}
+  }
+
 }
