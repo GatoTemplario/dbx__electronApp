@@ -2,12 +2,12 @@
   "name": "electron-app",
   "version": "1.0.0",
   "main": "dist/main/main.js",
-      "scripts": {
-      "start": "cross-env NODE_ENV=development electron dist/main/main.js",
-      "watch": "tsc --watch",
-      "build": "tsc && copyfiles -u 1 src/index.html dist/ && copyfiles -u 1 src/styles dist/styles/",
-      "postbuild": "copyfiles -u 1 src/index.html dist/ && copyfiles -u 1 src/styles dist/styles/"
-    },
+  "scripts": {
+    "start": "cross-env NODE_ENV=development electron dist/main/main.js",
+    "watch": "tsc --watch",
+    "build": "tsc && copyfiles -u 1 src/index.html dist/ && copyfiles -u 1 src/styles dist/styles/",
+    "postbuild": "copyfiles -u 1 src/index.html dist/ && copyfiles -u 1 src/styles dist/styles/"
+  },
   "devDependencies": {
     "@types/node": "^16.0.0",
     "copyfiles": "^2.0.0",

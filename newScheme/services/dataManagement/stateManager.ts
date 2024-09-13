@@ -1,11 +1,11 @@
-import { FolderData, FileData } from '../renderer/renderStructure';
+import { FolderData} from '../../models/folderStructure';
 
 interface StateData {
     active?: boolean;
     comment?: string;
 }
 
-class StateManager {
+export class StateManager {
     private stateMap: Map<string, StateData> = new Map();
     private originalData: FolderData;
 
@@ -52,5 +52,3 @@ class StateManager {
         // This could involve comparing timestamps, prompting user for conflict resolution, etc.
     }
 }
-
-export { StateManager };
