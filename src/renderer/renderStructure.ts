@@ -56,8 +56,9 @@ class FolderRenderer {
     private createStructure(folder: FolderData, depth: number = 0): HTMLUListElement {
         const ul = document.createElement('ul');
         ul.classList.add('folder-list');
-
+        
         this.appendItem(ul, folder, true);
+        // console.log("item", folder.name);
         folder.files?.forEach(file => this.appendItem(ul, file, false));
         folder.folders?.forEach(subFolder => ul.appendChild(this.createStructure(subFolder, depth + 1)));
 
@@ -66,6 +67,9 @@ class FolderRenderer {
 
     private appendItem(ul: HTMLUListElement, item: FolderData | FileData, isFolder: boolean) {
         const li = document.createElement('li');
+        // console.log("item", item.name);
+
+        
         li.textContent = item.name;
         li.classList.add(isFolder ? 'folder-item' : 'file-item');
         ul.appendChild(li);
@@ -109,17 +113,17 @@ class FolderRenderer {
 
         input.addEventListener(type === 'active' ? 'change' : 'input', (e) => {
             const target = e.target as HTMLInputElement;
-            this.updateState(id, { [type]: type === 'active' ? target.checked : target.value });
+            // this.updateState(id, { [type]: type === 'active' ? target.checked : target.value });
         });
 
         return input;
     }
 
-    private updateState(id: string, newState: Partial<StateData>) {
-        const currentState = this.stateMap.get(id) || {};
-        this.stateMap.set(id, { ...currentState, ...newState });
-        console.log('Updated state:', id, this.stateMap.get(id));
-    }
+    // private updateState(id: string, newState: Partial<StateData>) {
+    //     const currentState = this.stateMap.get(id) || {};
+    //     this.stateMap.set(id, { ...currentState, ...newState });
+    //     console.log('Updated state:', id, this.stateMap.get(id));
+    // }
 
     private splitFileName(fileName: string): { name: string; extension: string } {
         const lastDotIndex = fileName.lastIndexOf('.');

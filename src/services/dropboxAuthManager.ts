@@ -63,7 +63,7 @@ class DropboxAuthManager {
 
     async getAuthorizedDropboxInstance(): Promise<Dropbox> {
         const accessToken = await this.getAccessToken();
-        console.log("accessToken from getAuthDropInstance: ", accessToken);
+        // console.log("accessToken from getAuthDropInstance: ", accessToken);
         const k1 = new Dropbox({ accessToken, fetch });
         return k1
     }

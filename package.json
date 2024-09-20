@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "dropbox": "^10.34.0"
+    "dropbox": "^10.34.0",
+    "firebase": "^10.13.2",
+    "firebase-admin": "^12.5.0"
   }
 }
