@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Explorer</title>
+    <style>
+        .file-explorer {
+            font-family: Arial, sans-serif;
+        }
+        .file-list {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .file-list th, .file-list td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .file-list th {
+            background-color: #f2f2f2;
+        }
+        .folder-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+        .file-icon {
+            margin-right: 5px;
+        }
+        .deprecated {
+            text-decoration: line-through;
+            color: #888;
+        }
+        .comment-input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="file-explorer">
+        <h2>File Explorer</h2>
+        <table class="file-list" id="fileTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Modified</th>
+                    <th>Comments</th>
+                    <th>Deprecated</th>
+                </tr>
+            </thead>
+            <tbody id="fileList">
+                <!-- File list will be dynamically populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const fileStructure = [
+            {
+                name: 'project',
+                type: 'folder',
+                children: [
+                    {
+                        name: 'src',
+                        type: 'folder',
+                        children: [
+                            {
+                                name: 'index.html',
+                                type: 'HTML',
+                                size: '10 KB',
+                                modified: '2023-05-15',
+                                comment: 'Main landing page'
+                            },
+                            {
+                                name: 'css',
+                                type: 'folder',
+                                children: [
+                                    {
+                                        name: 'styles.css',
+                                        type: 'CSS',
+                                        size: '5 KB',
+                                        modified: '2023-05-14',
+                                        comment: 'Global styles'
+                                    }
+                                ]
+                            },
+                            {
+                                name: 'js',
+                                type: 'folder',
+                                children: [
+                                    {
+                                        name: 'app.js',
+                                        type: 'JavaScript',
+                                        size: '15 KB',
+                                        modified: '2023-05-13',
+                                        comment: 'Application logic'
+                                    },
+                                    {
+                                        name: 'old-script.js',
+                                        type: 'JavaScript',
+                                        size: '8 KB',
+                                        modified: '2023-03-01',
+                                        comment: 'Outdated scripts',
+                                        deprecated: true
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: 'assets',
+                        type: 'folder',
+                        children: [
+                            {
+                                name: 'logo.svg',
+                                type: 'SVG',
+                                size: '2 KB',
+                                modified: '2023-05-10',
+                                comment: 'Company logo'
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        function renderFileStructure(structure, parentElement, level = 0) {
+            structure.forEach(item => {
+                const row = document.createElement('tr');
+                row.dataset.level = level;
+                row.dataset.path = item.name;
+                if (item.deprecated) row.classList.add('deprecated');
+
+                const nameCell = document.createElement('td');
+                nameCell.innerHTML = '&nbsp;'.repeat(level * 4);
+                if (item.type === 'folder') {
+                    nameCell.innerHTML += `<span class="folder-toggle" onclick="toggleFolder(this)">▼</span>`;
+                }
+                nameCell.innerHTML += `<span class="file-icon">${item.type === 'folder' ? '📁' : '📄'}</span>${item.name}`;
+                row.appendChild(nameCell);
+
+                row.appendChild(createCell(item.type));
+                row.appendChild(createCell(item.size || '-'));
+                row.appendChild(createCell(item.modified || '-'));
+                
+                const commentCell = document.createElement('td');
+                const commentInput = document.createElement('input');
+                commentInput.type = 'text';
+                commentInput.className = 'comment-input';
+                commentInput.value = item.comment || '';
+                commentInput.onchange = () => updateComment(item.name, commentInput.value);
+                commentCell.appendChild(commentInput);
+                row.appendChild(commentCell);
+
+                const deprecatedCell = document.createElement('td');
+                const deprecatedCheckbox = document.createElement('input');
+                deprecatedCheckbox.type = 'checkbox';
+                deprecatedCheckbox.checked = item.deprecated || false;
+                deprecatedCheckbox.onclick = () => toggleDeprecated(deprecatedCheckbox, item.name);
+                deprecatedCell.appendChild(deprecatedCheckbox);
+                row.appendChild(deprecatedCell);
+
+                parentElement.appendChild(row);
+
+                if (item.children) {
+                    renderFileStructure(item.children, parentElement, level + 1);
+                }
+            });
+        }
+
+        function createCell(content) {
+            const cell = document.createElement('td');
+            cell.textContent = content;
+            return cell;
+        }
+
+        function toggleFolder(element) {
+            const row = element.closest('tr');
+            const level = parseInt(row.dataset.level);
+            const path = row.dataset.path;
+            let nextRow = row.nextElementSibling;
+
+            while (nextRow && parseInt(nextRow.dataset.level) > level) {
+                nextRow.style.display = element.textContent === '▼' ? 'none' : '';
+                nextRow = nextRow.nextElementSibling;
+            }
+
+            element.textContent = element.textContent === '▼' ? '▶' : '▼';
+        }
+
+        function updateComment(path, comment) {
+            console.log(`Updating comment for ${path}: ${comment}`);
+            // Here you would typically update your data structure or send an update to the server
+        }
+
+        function toggleDeprecated(checkbox, path) {
+            const row = checkbox.closest('tr');
+            if (checkbox.checked) {
+                row.classList.add('deprecated');
+            } else {
+                row.classList.remove('deprecated');
+            }
+            console.log(`Toggling deprecated for ${path}: ${checkbox.checked}`);
+            // Here you would typically update your data structure or send an update to the server
+        }
+
+        // Initial render
+        renderFileStructure(fileStructure, document.getElementById('fileList'));
+    </script>
+</body>
+</html>

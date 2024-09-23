@@ -1,4 +1,6 @@
 import { ObjRes } from "./fetch";
+const {renderData} = require("../renderer/renderStructure")
+
 
 // export class State {
 //     data : {
@@ -16,11 +18,24 @@ import { ObjRes } from "./fetch";
 const state = {
     data : {
         project: "",
-        tree: null
+        tree: {
+            active: true,
+            comment: "",
+            id: "",
+            name: "",
+            path: "",
+            files: [],
+            folders: [],
+        }
     },
     listeners: [],
     initState(){
         console.log("initstate");
+        console.log("this.data.tree: ", this.data.tree);
+        
+        renderData(this.data.tree)
+
+
         // console.log("api base url: ", API_BASE_URL);
         
         // const localData = localStorage.getItem("saved-state") as any;
@@ -31,7 +46,7 @@ const state = {
         // }
     },
     getState(){
-        console.log("this.data: ",this.data);
+        console.log("getState method: ",this.data);
         
         return this.data
     },

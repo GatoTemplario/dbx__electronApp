@@ -1,25 +1,12 @@
 const path1 = require('path');
-const { getDatabase, ref, set } = require("firebase/database");
+const { getDatabase, ref, set, get } = require("firebase/database");
 const { getArbolOG, buildStructure, checkForUpdatesAndRender } = require('./services/fetch');
 const { renderData } = require('./renderer/renderStructure');
-// const { ipcRenderer } = require('electron');
-// const { authManager } = require('./services/dropboxAuthManager');
 const { rtdb, db } = require(path1.resolve(__dirname, './logic/db'))
 const { state } = require('./services/state')
 
-// index.ts
 async function uploadJson(data : any, fileName : string) {
     try {
-        // const dbx = await authManager.getAuthorizedDropboxInstance();
-        // const jsonBuffer = Buffer.from(JSON.stringify(data, null, 2));
-        // console.log("data: ", data);
-        
-        // await dbx.filesUpload({
-        //     path: `/folder/${fileName}`,
-        //     contents: jsonBuffer,
-        //     mode: { '.tag': 'overwrite' }
-        // });
-
         const dbRef = ref(rtdb, `fileStructure/${fileName}`);
         await set(dbRef, data);
 
@@ -30,46 +17,76 @@ async function uploadJson(data : any, fileName : string) {
     }
 }
 
+// function que chequea primero si el ID es el mismo que el state, si es así, no hace nada.
+// Si el ID es diferente, primero busca el arbol del proyecto y luego se fija si existe en rtdb
+// Si existe, no hace nada. Si no existe, sube el arbol (sería la primera vez ever)
+async function projectIDChecker(currentProjectID : string, rootFolder : any){
+    const currentState = state.getState();
+    const newProjectID = currentState.project;
+
+    if (newProjectID && newProjectID !== currentProjectID) {
+        console.log("New project ID detected. Checking if update is needed...");
+        currentProjectID = newProjectID;
+
+        // First, check if the project structure already exists in the database
+        const dbRef = ref(rtdb, `fileStructure/${newProjectID}`);
+        const snapshot = await get(dbRef);
+
+        if (!snapshot.exists()) {
+            console.log("Project structure not found in database. Updating...");
+            const folders = rootFolder.folders;
+            const result = folders.find(item => item.name.includes(newProjectID));
+
+            if (result) {
+                console.log("Target folder found: ", result);
+                const particularEntry = await getArbolOG(result.path);
+                const particularFolder = buildStructure(particularEntry);
+
+                await uploadJson(particularFolder, newProjectID);
+                state.setState({ tree: particularFolder });
+                console.log("path 1:");
+                
+                renderData(state.getState().tree);
+                console.log("Project data uploaded for new project ID: ", newProjectID);
+            } else {
+                console.log("No matching folder found for project ID: ", newProjectID);
+            }
+        } else {
+            console.log("Project structure already exists in database. Fetching and updating state...");
+            const existingStructure = snapshot.val();
+            console.log("Existing structure: ", existingStructure);
+            
+            // Update state with the existing structure from the database
+            state.setState( existingStructure );
+            console.log("path 2:");
+            renderData(existingStructure);
+        }
+    } else {
+        // renderData(state.tree)
+        console.log("No changes in project ID or project ID is null/undefined");
+    }
+}
+
 async function main() {
     try {
         state.initState()
         const currentState = state.getState();
         var currentProjectID = currentState.project;
-
+        
         const allEntries = await getArbolOG('/folder');
         const rootFolder = buildStructure(allEntries);
         console.log("rootFolder: ", rootFolder);
         
-        state.suscribe( async () =>{
-            const newProjectID = state.getState().project;
-            // console.log("newProjectID: ", newProjectID);
-            // console.log("currentProjectID: ", currentProjectID);
+        state.suscribe( async () => {
+            await projectIDChecker(currentProjectID, rootFolder);
+            // const currentState = state.getState();
+            // console.log("path 2:");
+            // renderData(currentState.tree)
 
-            if (newProjectID && newProjectID !== currentProjectID) {
-                console.log("New project ID detected. Updating...");
-                currentProjectID = newProjectID;
-                const folders = rootFolder.folders;
-                const result = folders.find(item => item.name.includes(newProjectID));
-
-                if (result) {
-                    console.log("Target folder found: ", result);
-                    const particularEntry = await getArbolOG(result.path);
-                    const particularFolder = buildStructure(particularEntry);
-
-                    // Here you would make the call to the Dropbox API
-                    // For now, we'll just upload to Firebase
-                    await uploadJson(particularFolder, newProjectID);
-                    console.log("Project data uploaded for new project ID: ", newProjectID);
-                } else {
-                    console.log("No matching folder found for project ID: ", newProjectID);
-                }
-            } else {
-                console.log("No changes in project ID or project ID is null/undefined");
-            }
         })
 
 
-        renderData(rootFolder);
+        // renderData(rootFolder);
 
         // setInterval(async () => {
         //     console.log("nuevoUpdate!");
@@ -79,5 +96,6 @@ async function main() {
         console.error("Error:", error);
     }
 }
+
 
 main();
