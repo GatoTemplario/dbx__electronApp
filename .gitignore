@@ -2,3 +2,4 @@ node_modules
 dist
 dbx__appgit 
 .env
+key.json

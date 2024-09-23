@@ -1,3 +1,6 @@
+const { state } = require('../services/state')
+// const { getArbolOG, buildStructure, checkForUpdatesAndRender } = require('./services/fetch');
+
 export interface FileData {
     id: string;
     name: string;
@@ -22,6 +25,8 @@ class FolderRenderer {
     private extensionColumn: HTMLDivElement;
     private booleanColumn: HTMLDivElement;
     private commentsColumn: HTMLDivElement;
+    private projectCodeInput: HTMLInputElement;
+    private projectCodeFeedback: HTMLDivElement;
 
     constructor(private data: FolderData) {
         this.container = document.createElement('div');
@@ -29,21 +34,83 @@ class FolderRenderer {
         this.extensionColumn = document.createElement('div');
         this.booleanColumn = document.createElement('div');
         this.commentsColumn = document.createElement('div');
+        this.projectCodeInput = document.createElement('input');
+        this.projectCodeFeedback = document.createElement('div');
         this.initializeContainer();
     }
-
+    
     private initializeContainer() {
         this.container.classList.add('folder-container');
         this.folderStructure.classList.add('folder-structure');
         this.extensionColumn.classList.add('extension-column');
         this.booleanColumn.classList.add('boolean-column');
         this.commentsColumn.classList.add('comments-column');
+        
+        this.projectCodeInput.type = 'text';
+        this.projectCodeInput.placeholder = 'Ingresa código del proyecto (6 dígitos) y presiona Enter';
+        this.projectCodeInput.classList.add('project-code-input');
+        this.projectCodeInput.addEventListener('keydown', this.handleProjectCodeInput);
+        this.projectCodeInput.addEventListener('input', this.validateProjectCode);
+
+        this.projectCodeFeedback.classList.add('project-code-feedback');
     }
 
+    private validateProjectCode = () => {
+        const input = this.projectCodeInput.value;
+        const isValid = /^\d{6}$/.test(input);
+
+        if (isValid) {
+            this.projectCodeInput.classList.remove('invalid');
+            this.projectCodeInput.classList.add('valid');
+            this.projectCodeFeedback.textContent = 'Código válido';
+            this.projectCodeFeedback.classList.remove('error');
+            this.projectCodeFeedback.classList.add('success');
+        } else {
+            this.projectCodeInput.classList.remove('valid');
+            this.projectCodeInput.classList.add('invalid');
+            this.projectCodeFeedback.textContent = 'El código debe ser un número de 6 dígitos';
+            this.projectCodeFeedback.classList.remove('success');
+            this.projectCodeFeedback.classList.add('error');
+        }
+    }
+    private handleProjectCodeInput = (event: KeyboardEvent) => {
+        if (event.key === 'Enter') {
+            const input = this.projectCodeInput.value;
+            if (/^\d{6}$/.test(input)) {
+                // console.log('Valid project code entered:', input);
+
+                const currentState = state.getState()
+                currentState.project = input
+                state.setState(currentState)
+                
+                // You can add more logic here to handle the valid project code
+                this.projectCodeFeedback.textContent = 'Código aceptado';
+                this.projectCodeFeedback.classList.remove('error');
+                this.projectCodeFeedback.classList.add('success');
+                
+                // Optionally, clear the input after processing
+                // this.projectCodeInput.value = '';
+                // this.projectCodeInput.classList.remove('valid', 'invalid');
+            } else {
+                // console.log('Invalid project code');
+                this.projectCodeFeedback.textContent = 'Código inválido. Por favor, ingrese un número de 6 dígitos.';
+                this.projectCodeFeedback.classList.remove('success');
+                this.projectCodeFeedback.classList.add('error');
+            }
+        }
+    }
     public render() {
+        // Add the project code input and feedback to the container
+        const inputContainer = document.createElement('div');
+        inputContainer.classList.add('input-container');
+        inputContainer.appendChild(this.projectCodeInput);
+        inputContainer.appendChild(this.projectCodeFeedback);
+        this.container.appendChild(inputContainer);
+
+        
         const folderList = this.createStructure(this.data);
         this.folderStructure.appendChild(folderList);
-
+        
         const columnsContainer = document.createElement('div');
         columnsContainer.classList.add('columns-container');
         [this.extensionColumn, this.booleanColumn, this.commentsColumn].forEach(col => columnsContainer.appendChild(col));

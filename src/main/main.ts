@@ -27,7 +27,7 @@ function createMainWindow() {
       // darkTheme: user
     },
   });
-
+  
   mainWindow.loadFile(path.join(__dirname, '../index.html'));
   mainWindow.maximize()
   
@@ -44,6 +44,7 @@ function setupAppEvents() {
     
     // Initialize Dropbox auth
     try {
+      
       await authManager.getAccessToken();
       console.log('Dropbox authentication successful');
     } catch (error) {
@@ -69,7 +70,7 @@ function setupIPC() {
 function startApp() {
   setupAppEvents();
   setupIPC();
-  
+  console.log(path.join(__dirname, '../index.html'))
 }
 
 

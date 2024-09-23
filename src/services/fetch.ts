@@ -1,13 +1,13 @@
-const path = require('path');
+// const path = require('path');
 const dotenv = require('dotenv');
-const { renderData } = require('../renderer/renderStructure');
-const fs = require('fs');
-const { StateManager } = require('./state');
-const { FolderData } = require('../renderer/renderStructure');
+// const { renderData } = require('../renderer/renderStructure');
+// const fs = require('fs');
+// const { StateManager } = require('./state');
+// const { FolderData } = require('../renderer/renderStructure');
 const { authManager } = require('./dropboxAuthManager');
 
 dotenv.config()
-let stateManager: typeof StateManager | null = null;
+// let stateManager: typeof StateManager | null = null;
 
 interface ExtendedEntry {
     tag: string;
@@ -31,7 +31,7 @@ class ObjRes {
         this.name = name;
         this.path = path;
         this.id = id;
-        this.active = false;
+        this.active = true;
         this.comment = "";
         this.folders = [];
         this.files = [];

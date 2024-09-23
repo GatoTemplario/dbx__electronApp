@@ -34,6 +34,10 @@ class DropboxAuthManager {
 
     private async refreshAccessToken(): Promise<void> {
         try {
+            // console.log("refresh_token: ", process.env.DROPBOX_REFRESH_TOKEN!,
+            //     "client_id: ", process.env.DROPBOX_APP_KEY!,
+            //     "client_secret: ", process.env.DROPBOX_APP_SECRET!,);
+            
             const response = await fetch('https://api.dropboxapi.com/oauth2/token', {
                 method: 'POST',
                 headers: {
