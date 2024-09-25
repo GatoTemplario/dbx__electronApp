@@ -31,7 +31,7 @@ const state = {
     listeners: [],
     initState(){
         console.log("initstate");
-        console.log("this.data.tree: ", this.data.tree);
+        // console.log("this.data.tree: ", this.data.tree);
         
         renderData(this.data.tree)
 
@@ -46,7 +46,7 @@ const state = {
         // }
     },
     getState(){
-        console.log("getState method: ",this.data);
+        // console.log("getState method: ",this.data);
         
         return this.data
     },

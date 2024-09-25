@@ -1,4 +1,72 @@
-// import { state } from '../services/state';
+const { state } = require('../services/state');
+const projectCodeInput = document.createElement('input');
+// const projectCodeFeedback = document.createElement('div');
+const nameProject =document.createElement('label')
+const inputContainer = document.createElement('div');
+
+function initializeInputProject() {
+    projectCodeInput.type = 'text';
+    projectCodeInput.placeholder = 'XXXXXX';
+    projectCodeInput.classList.add('project-title-input');
+    projectCodeInput.addEventListener('keydown', handleProjectCodeInput);
+    projectCodeInput.addEventListener('input', validateProjectCode);
+
+    // projectCodeFeedback.classList.add('project-code-feedback');
+    
+    inputContainer.classList.add('input-container');
+    inputContainer.appendChild(projectCodeInput);
+
+    const fullNombreProjecto = state.getState()?.name;
+    if(fullNombreProjecto){
+        const nombreProjecto = fullNombreProjecto.split('-').slice(1).join('-').trim();
+        nameProject.textContent = nombreProjecto;
+        nameProject.classList.add('project-name');
+        inputContainer.appendChild(nameProject);
+    }
+
+    // inputContainer.appendChild(projectCodeFeedback);
+    document.body.appendChild(inputContainer);
+}
+function validateProjectCode(){
+    const input = projectCodeInput.value;
+    const isValid = /^\d{6}$/.test(input);
+
+    if (isValid) {
+        projectCodeInput.classList.remove('invalid');
+        projectCodeInput.classList.add('valid');
+        // projectCodeFeedback.textContent = 'Código válido';
+        // projectCodeFeedback.classList.remove('error');
+        // projectCodeFeedback.classList.add('success');
+    } else {
+        projectCodeInput.classList.remove('valid');
+        projectCodeInput.classList.add('invalid');
+        // projectCodeFeedback.textContent = 'El código debe ser un número de 6 dígitos';
+        // projectCodeFeedback.classList.remove('success');
+        // projectCodeFeedback.classList.add('error');
+    }
+}
+function handleProjectCodeInput(event: KeyboardEvent){
+    if (event.key === 'Enter') {
+        const input = projectCodeInput.value;
+        if (/^\d{6}$/.test(input)) {
+            const currentState = state.getState()
+            currentState.project = input
+            state.setState(currentState)
+            
+            // You can add more logic here to handle the valid project code
+            // projectCodeFeedback.textContent = 'Código aceptado';
+            // projectCodeFeedback.classList.remove('error');
+            // projectCodeFeedback.classList.add('success');
+        } else {
+            // projectCodeInput.classList.remove('invalid');
+            // projectCodeInput.classList.add('error');
+            // this.projectCodeFeedback.textContent = 'Código inválido. Por favor, ingrese un número de 6 dígitos.';
+            // this.projectCodeFeedback.classList.remove('success');
+            // this.projectCodeFeedback.classList.add('error');
+        }
+    }
+}
+
 
 export interface FileData {
     id: string;
@@ -17,15 +85,20 @@ export interface FolderData {
 class TableRenderer {
     private table: HTMLTableElement;
     private tbody: HTMLTableSectionElement;
+    private tableContainer: HTMLDivElement;
 
     constructor(private data: FolderData) {
         this.table = document.createElement('table');
         this.tbody = document.createElement('tbody');
-        this.initializeTable();
+        this.tableContainer = document.createElement('div');
+        // this.initializeTable();
     }
 
-    private initializeTable() {
+    initializeTable() {
         this.table.classList.add('folder-table');
+        
+        this.tableContainer.classList.add('table-container');
+        
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
         ['Name', 'Type', 'Deprecated', 'Comment'].forEach(headerText => {
@@ -33,22 +106,28 @@ class TableRenderer {
             th.textContent = headerText;
             headerRow.appendChild(th);
         });
+
+        this.tableContainer.appendChild(this.table);
+        document.body.appendChild(this.tableContainer);
+
         thead.appendChild(headerRow);
         this.table.appendChild(thead);
         this.table.appendChild(this.tbody);
     }
 
     public render() {
-        this.renderStructure(this.data);
-        document.body.appendChild(this.table);
+        this.tableContainer.innerHTML = '';
+        this.renderStructure(this.data, 0, true);
+        this.tableContainer.appendChild(this.table);
     }
 
-    private renderStructure(folder: FolderData, depth: number = 0) {
-        this.addRow(folder, true, depth);
-        folder.files?.forEach(file => this.addRow(file, false, depth + 1));
-        folder.folders?.forEach(subFolder => this.renderStructure(subFolder, depth + 1));
+    private renderStructure(folder: FolderData, depth: number = 0, isRoot: boolean = false) {
+        if (!isRoot) {
+            this.addRow(folder, true, depth);
+        }
+        folder.files?.forEach(file => this.addRow(file, false, isRoot ? 0 : depth + 1));
+        folder.folders?.forEach(subFolder => this.renderStructure(subFolder, isRoot ? 0 : depth + 1));
     }
-
     private addRow(item: FolderData | FileData, isFolder: boolean, depth: number) {
         const row = this.tbody.insertRow();
         
@@ -100,6 +179,11 @@ class TableRenderer {
 }
 
 export function renderData(data: FolderData) {
+    document.body.innerHTML = '';
     console.log('Rendering data:', data);
-    new TableRenderer(data).render();
+    initializeInputProject()
+    // initializeNameProject()   
+    const tableRenderer = new TableRenderer(data)
+    tableRenderer.initializeTable();
+    tableRenderer.render()   
 }

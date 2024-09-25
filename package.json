@@ -5,8 +5,8 @@
   "scripts": {
     "start": "cross-env NODE_ENV=development electron dist/main/main.js",
     "watch": "tsc --watch",
-    "build": "tsc && copyfiles -u 1 src/index.html dist/ && copyfiles -u 1 src/styles dist/styles/",
-    "postbuild": "copyfiles -u 1 src/index.html dist/ && copyfiles -u 1 src/styles dist/styles/"
+    "build": "tsc && copyfiles -u 1 src/index.html dist/ && copyfiles -u 1 src/logic/style.css dist/",
+    "postbuild": "copyfiles -u 1 src/index.html dist/ && copyfiles -u 1 src/logic dist/logic/"
   },
   "devDependencies": {
     "@types/node": "^16.0.0",

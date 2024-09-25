@@ -1,0 +1,160 @@
+/* General styling for the dark mode */
+body {
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* Styling for headings */
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+}
+
+/* Links styling */
+a {
+    color: #1e90ff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Buttons */
+button {
+    background-color: #333333;
+    color: #ffffff;
+    border: 1px solid #444444;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #555555;
+}
+
+/* Inputs */
+/* input[type="text"], input[type="password"], textarea {
+    background-color: #2e2e2e;
+    color: #ffffff;
+    border: 1px solid #555555;
+    padding: 8px;
+    border-radius: 5px;
+} */
+
+input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+    outline: none;
+    border-color: #1e90ff;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #444444;
+}
+
+th {
+    background-color: #333333;
+}
+
+td {
+    background-color: #2e2e2e;
+}
+
+/* Dark mode for code blocks */
+code, pre {
+    background-color: #2d2d2d;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+    display: block;
+    overflow-x: auto;
+}
+
+/* Dark mode for forms */
+form {
+    background-color: #333333;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+
+/* a partir de aqui?? */
+/* .project-code-input.valid {
+    border-color: green;
+}
+
+.project-code-input.invalid {
+    border-color: red;
+} */
+
+.project-code-feedback {
+    font-size: 0.8em;
+    margin-top: 5px;
+}
+
+.project-code-feedback.success {
+    color: green;
+}
+
+.project-code-feedback.error {
+    color: red;
+}
+.project-title-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.project-title-input {
+    background-color: #2e2e2e;
+    color: #ffffff;
+    border: 1px solid #555555;
+    padding: 8px;
+    border-radius: 5px;
+    font-size: 24px;
+    font-weight: bold;
+    width: 120px; /* Adjust the width to fit a 6-digit code */
+    margin-right: 10px;
+}
+.invalid{
+    color: rgb(118, 118, 118)
+}
+
+.project-title-input:focus {
+    outline: none;
+    border-color: #1e90ff;
+}
+
+.project-name {
+    background-color: #2e2e2e;
+    color: #ffffff;
+    border: 1px solid #555555;
+    padding: 8px;
+    border-radius: 5px;
+    font-size: 24px;
+    font-weight: bold;
+    flex-grow: 1;
+}
+
+.project-code-feedback {
+    font-size: 0.8em;
+    margin-left: 10px;
+    color: #1e90ff;
+}

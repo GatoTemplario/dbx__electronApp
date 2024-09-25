@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 const { app, BrowserWindow, ipcMain, nativeTheme } = require('electron');
 const path = require('path');
+const authManager = require('../services/dropboxAuthManager');
 
 
 const pathToReload = path.join(__dirname, 'dist');
