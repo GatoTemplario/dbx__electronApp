@@ -73,6 +73,9 @@ async function main() {
         const currentState = state.getState();
         var currentProjectID = currentState.project;
         
+        // for production
+        // const allEntries = await getArbolOG('/fundamenta ing/fdm-2024');
+        // for dev
         const allEntries = await getArbolOG('/folder');
         const rootFolder = buildStructure(allEntries);
         console.log("rootFolder: ", rootFolder);

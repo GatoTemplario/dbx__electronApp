@@ -1,7 +1,7 @@
 const { state } = require('../services/state');
 const projectCodeInput = document.createElement('input');
 // const projectCodeFeedback = document.createElement('div');
-const nameProject =document.createElement('label')
+const nameProject = document.createElement('label')
 const inputContainer = document.createElement('div');
 
 function initializeInputProject() {
@@ -18,7 +18,8 @@ function initializeInputProject() {
 
     const fullNombreProjecto = state.getState()?.name;
     if(fullNombreProjecto){
-        const nombreProjecto = fullNombreProjecto.split('-').slice(1).join('-').trim();
+        const nombreProjecto = fullNombreProjecto.split('_').slice(1).join('-').trim();
+        nombreProjecto
         nameProject.textContent = nombreProjecto;
         nameProject.classList.add('project-name');
         inputContainer.appendChild(nameProject);
@@ -86,6 +87,11 @@ class TableRenderer {
     private table: HTMLTableElement;
     private tbody: HTMLTableSectionElement;
     private tableContainer: HTMLDivElement;
+    private currentResizer: HTMLElement | null = null;
+    private nextCol: HTMLElement | null = null;
+    private x: number = 0;
+    private w: number = 0;
+    private nw: number = 0;
 
     constructor(private data: FolderData) {
         this.table = document.createElement('table');
@@ -104,17 +110,64 @@ class TableRenderer {
         ['Name', 'Type', 'Deprecated', 'Comment'].forEach(headerText => {
             const th = document.createElement('th');
             th.textContent = headerText;
+            const divResizer = document.createElement('div');
+            divResizer.classList.add('resizer');
+            th.appendChild(divResizer);
             headerRow.appendChild(th);
         });
-
-        this.tableContainer.appendChild(this.table);
-        document.body.appendChild(this.tableContainer);
-
         thead.appendChild(headerRow);
         this.table.appendChild(thead);
         this.table.appendChild(this.tbody);
+        this.tableContainer.appendChild(this.table);
+        document.body.appendChild(this.tableContainer);
+        this.setupResizers()
     }
 
+    private setupResizers() {
+        const resizers = this.table.querySelectorAll('.resizer');
+        resizers.forEach((resizer) => {
+            resizer.addEventListener('mousedown', this.mouseDownHandler.bind(this));
+        });
+    }
+
+    private mouseDownHandler(e: MouseEvent) {
+        this.currentResizer = e.target as HTMLElement;
+        const parent = this.currentResizer.parentElement as HTMLElement;
+        this.nextCol = parent.nextElementSibling as HTMLElement;
+        this.x = e.clientX;
+        this.w = parent.offsetWidth;
+        if (this.nextCol) this.nw = this.nextCol.offsetWidth;
+
+        document.addEventListener('mousemove', this.mouseMoveHandler.bind(this));
+        document.addEventListener('mouseup', this.mouseUpHandler.bind(this));
+
+        this.currentResizer.classList.add('resizing');
+    }
+
+    private mouseMoveHandler(e: MouseEvent) {
+        if (!this.currentResizer) return;
+
+        const dx = e.clientX - this.x;
+        const col = this.currentResizer.parentElement as HTMLElement;
+        const newWidth = this.w + dx;
+        const minWidth = 50; // Minimum width for a column
+
+        if (newWidth > minWidth && this.nextCol && this.nw - dx > minWidth) {
+            col.style.width = `${newWidth}px`;
+            if (this.nextCol) this.nextCol.style.width = `${this.nw - dx}px`;
+        }
+    }
+
+    private mouseUpHandler() {
+        document.removeEventListener('mousemove', this.mouseMoveHandler.bind(this));
+        document.removeEventListener('mouseup', this.mouseUpHandler.bind(this));
+        if (this.currentResizer) {
+            this.currentResizer.classList.remove('resizing');
+        }
+        this.currentResizer = null;
+        this.nextCol = null;
+    }
+    
     public render() {
         this.tableContainer.innerHTML = '';
         this.renderStructure(this.data, 0, true);
