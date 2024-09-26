@@ -62,7 +62,6 @@ async function projectIDChecker(currentProjectID : string, rootFolder : any){
             renderData(existingStructure);
         }
     } else {
-        // renderData(state.tree)
         console.log("No changes in project ID or project ID is null/undefined");
     }
 }
@@ -73,28 +72,13 @@ async function main() {
         const currentState = state.getState();
         var currentProjectID = currentState.project;
         
-        // for production
-        // const allEntries = await getArbolOG('/fundamenta ing/fdm-2024');
-        // for dev
         const allEntries = await getArbolOG('/folder');
         const rootFolder = buildStructure(allEntries);
         console.log("rootFolder: ", rootFolder);
         
         state.suscribe( async () => {
             await projectIDChecker(currentProjectID, rootFolder);
-            // const currentState = state.getState();
-            // console.log("path 2:");
-            // renderData(currentState.tree)
-
         })
-
-
-        // renderData(rootFolder);
-
-        // setInterval(async () => {
-        //     console.log("nuevoUpdate!");
-        //     await checkForUpdatesAndRender();
-        // }, 25000); // Check every 25 seconds
     } catch (error) {
         console.error("Error:", error);
     }
