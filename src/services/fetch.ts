@@ -8,6 +8,10 @@ const { authManager } = require('./dropboxAuthManager');
 
 dotenv.config()
 // let stateManager: typeof StateManager | null = null;
+function getFileExtension(fileName: string): string {
+    const parts = fileName.split('.');
+    return parts.length > 1 ? parts[parts.length - 1] : '';
+}
 
 interface ExtendedEntry {
     tag: string;
@@ -16,6 +20,8 @@ interface ExtendedEntry {
     id: string;
     active?: boolean;
     comment?: string;
+    extension: string;
+
 }
 
 class ObjRes {
@@ -25,6 +31,7 @@ class ObjRes {
     active: boolean;
     comment: string;
     folders: ObjRes[];
+    extension: string;
     files: ExtendedEntry[];
 
     constructor(name: string, path: string, id: string) {
@@ -35,6 +42,7 @@ class ObjRes {
         this.comment = "";
         this.folders = [];
         this.files = [];
+        this.extension = "";
     }
 }
 
@@ -69,10 +77,12 @@ function buildStructure(entries: ExtendedEntry[]): ObjRes {
 
             if (parentFolder) {
                 if (!parentFolder.files.some(file => file.path_lower === entry.path_lower)) {
+                    const fileExtension = getFileExtension(entry.name);
                     parentFolder.files.push({
                         ...entry,
                         active: entry.active || false,
-                        comment: entry.comment || ""
+                        comment: entry.comment || "",
+                        extension: fileExtension,
                     });
                 }
             }
@@ -90,6 +100,8 @@ async function getArbolOG(path: string): Promise<ExtendedEntry[]> {
         const dbx = await authManager.getAuthorizedDropboxInstance()
         
         let response = await dbx.filesListFolder({ path, recursive: true });
+        // console.log("ALL Entries:", response.result.entries);
+        
         
         let allEntries = response.result.entries.map((entry: any) => {
             const modifiedEntry = {

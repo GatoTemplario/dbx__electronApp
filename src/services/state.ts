@@ -5,10 +5,10 @@ const state = {
     data : {
         project: "",
         tree: {
+            name: "",
             active: true,
             comment: "",
             id: "",
-            name: "",
             path: "",
             files: [],
             folders: [],

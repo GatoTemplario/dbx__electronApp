@@ -73,8 +73,11 @@ async function main() {
         var currentProjectID = currentState.project;
         
         const allEntries = await getArbolOG('/folder');
+        console.log("allEntries: ", allEntries);
+        
         const rootFolder = buildStructure(allEntries);
-        console.log("rootFolder: ", rootFolder);
+
+            console.log("rootFolder: ", rootFolder);
         
         state.suscribe( async () => {
             await projectIDChecker(currentProjectID, rootFolder);

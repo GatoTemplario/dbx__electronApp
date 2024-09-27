@@ -213,11 +213,27 @@
     
     <script>
     const fileStructure = [
-      { name: "project", type: "folder", children: [
-        { name: "src", type: "folder", children: [
-          { name: "index.html", type: "HTML", size: "10 KB", modified: "2023-05-15", comments: "Main landing page", deprecated: false },
-          { name: "css", type: "folder", children: [
-            { name: "styles.css", type: "CSS", size: "5 KB", modified: "2023-05-14", comments: "Global styles", deprecated: false }
+      { name: "project", 
+        type: "folder", 
+        children: [
+        { name: "src", 
+          type: "folder",
+          children: [
+          { name: "index.html",
+            type: "HTML", 
+            size: "10 KB", 
+            modified: "2023-05-15", 
+            comments: "Main landing page", 
+            deprecated: false },
+          { name: "css", 
+            type: "folder", 
+            children: [
+            { name: "styles.css", 
+              type: "CSS", 
+              size: "5 KB", 
+              modified: "2023-05-14", 
+              comments: "Global styles", 
+              deprecated: false }
           ]},
           { name: "js", type: "folder", children: [
             { name: "app.js", type: "JavaScript", size: "15 KB", modified: "2023-05-13", comments: "Application logic", deprecated: false },
@@ -433,6 +449,8 @@
       hideContextMenu();
     }
     
+
+
     function initDragAndDrop() {
       const fileList = document.getElementById('fileList');
       let draggedItems = [];
@@ -482,12 +500,11 @@
         const dropTargets = fileList.querySelectorAll('.drop-target');
         dropTargets.forEach(target => target.classList.remove('drop-target'));
       });
-    }
-    
-    function moveItem(sourcePath, targetPath) {
+      
+      function moveItem(sourcePath, targetPath) {
       const sourceItem = findItemByPath(fileStructure[0], sourcePath.split('/').slice(1));
       const targetItem = findItemByPath(fileStructure[0], targetPath.split('/').slice(1));
-    
+      
       if (sourceItem && targetItem && targetItem.type === 'folder') {
         removeItemFromParent(fileStructure[0], sourcePath.split('/').slice(1));
         targetItem.children = targetItem.children || [];
@@ -511,6 +528,7 @@
         if (child) removeItemFromParent(child, rest);
       }
     }
+  }
     
     function refreshFileList() {
       const fileList = document.getElementById('fileList');
@@ -521,7 +539,7 @@
     
     function initResizers() {
       const table = document.getElementById('fileTable');
-      // const cols = table.querySelectorAll('th, td');
+      const cols = table.querySelectorAll('th, td');
       const resizers = table.querySelectorAll('.resizer');
     
       let currentResizer;
@@ -544,7 +562,7 @@
         currentResizer.classList.add('resizing');
       }
     
-      function mouseMoveHandler(e) {
+      function mouseMoveHandler(e ) {
         const dx = e.clientX - x;
         const col = currentResizer.parentElement;
         const newWidth = w + dx;

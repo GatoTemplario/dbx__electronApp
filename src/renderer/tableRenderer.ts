@@ -63,7 +63,8 @@ export function createTableRenderer(data: FolderData) {
 
     function addRow(item: FolderData | FileData, isFolder: boolean, depth: number) {
         const row = tbody.insertRow();
-        
+        row.dataset.path = item.id;
+
         // Name column
         const nameCell = row.insertCell();
         nameCell.textContent = '  '.repeat(depth) + item.name;

@@ -9,15 +9,36 @@ export function toggleFolder(folderElement: HTMLElement): void {
     }
 }
 
-export function initDragAndDrop(renderData: any) {
+export function initDragAndDrop(renderCallback: () => void) {
     console.log('initDragAndDrop');
     
-    let selectedItems = [];
     const currentState =state.getState()
     const fileList = document.getElementById('fileList');
     console.log('fileList', fileList);
     
+    let selectedItems = [];
     let draggedItems = [];
+
+    fileList.addEventListener('click', (e: MouseEvent) => {
+        const clickedRow = (e.target as HTMLElement).closest('tr');
+        if (!clickedRow) return;
+        
+        if (e.ctrlKey || e.metaKey) {
+            // Toggle selection with Ctrl/Cmd key
+            toggleItemSelection(clickedRow);
+        } else if (e.shiftKey && selectedItems.length > 0) {
+            // Range selection with Shift key
+            const lastSelected = selectedItems[selectedItems.length - 1];
+            const start = Math.min(getRowIndex(lastSelected), getRowIndex(clickedRow));
+            const end = Math.max(getRowIndex(lastSelected), getRowIndex(clickedRow));
+            const rowsInRange = Array.from(fileList.querySelectorAll('tr')).slice(start, end + 1);
+            rowsInRange.forEach(row => addItemToSelection(row as HTMLElement));
+        } else {
+            // Single selection
+            clearSelection();
+            addItemToSelection(clickedRow);
+        }
+    });
   
     fileList.addEventListener('dragstart', (e) => {
       if ((e.target as HTMLElement).tagName === 'TR') {
@@ -66,6 +87,39 @@ export function initDragAndDrop(renderData: any) {
       const dropTargets = fileList.querySelectorAll('.drop-target');
       dropTargets.forEach(target => target.classList.remove('drop-target'));
     });
+
+    function toggleItemSelection(item: HTMLElement) {
+        const index = selectedItems.indexOf(item);
+        if (index === -1) {
+            addItemToSelection(item);
+        } else {
+            removeItemFromSelection(item);
+        }
+    }
+    function addItemToSelection(item: HTMLElement) {
+        if (!selectedItems.includes(item)) {
+            selectedItems.push(item);
+            item.classList.add('selected');
+        }
+    }
+
+    function removeItemFromSelection(item: HTMLElement) {
+        const index = selectedItems.indexOf(item);
+        if (index !== -1) {
+            selectedItems.splice(index, 1);
+            item.classList.remove('selected');
+        }
+    }
+    function clearSelection() {
+        selectedItems.forEach(item => item.classList.remove('selected'));
+        selectedItems = [];
+    }
+
+    function getRowIndex(row: any): number {
+        return Array.from(fileList.querySelectorAll('tr')).indexOf(row);
+    }
+
+
   }
 //   function refreshFileList() {
 //     const fileList = document.getElementById('fileList');
@@ -114,5 +168,7 @@ export function initDragAndDrop(renderData: any) {
             parentItem.files = parentItem.files.filter((file: any) => file.name !== itemName);
         }
     }
+    
 }
+
     
