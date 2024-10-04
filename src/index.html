@@ -7,7 +7,28 @@
   <title>Electron App</title>
 </head>
 <body class="dark-mode">
-  <h1>Welcome to Electron</h1>
+  <div class="file-explorer">
+    <div class="header">
+      <input type="text" id="explorerName" placeholder="XXXXXX" class="explorer-name-input">
+      <div id="titleDisplay" class="title-display"></div>
+      <button id="showModalBtn" class="show-modal-btn">⚙️</button>
+    </div>
+    <table class="file-list" id="fileTable">
+      <thead>
+        <tr>
+          <th>Name<div class="resizer"></div></th>
+          <th>Type<div class="resizer"></div></th>
+          <th>Size<div class="resizer"></div></th>
+          <th>Modified<div class="resizer"></div></th>
+          <th>Comments<div class="resizer"></div></th>
+          <th>Deprecated</th>
+        </tr>
+      </thead>
+      <tbody id="fileList">
+        <!-- File list will be dynamically populated here -->
+      </tbody>
+    </table>
+  </div>
   <script type="module" src="../dist/logic/index.js"></script> <!-- This will be the compiled JS file from TypeScript -->
 </body>
 </html>

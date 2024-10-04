@@ -18,10 +18,6 @@ class DropboxAuthManager {
     }
 
     async getAccessToken(): Promise<string> {
-        // console.log("clientId:", process.env.DROPBOX_APP_KEY),
-        // console.log("clientSecret:", process.env.DROPBOX_APP_SECRET),
-        //     console.log("refreshToken:", process.env.DROPBOX_REFRESH_TOKEN);
-        
         if (!this.accessToken || this.isTokenExpired()) {
             await this.refreshAccessToken();
         }
@@ -34,10 +30,6 @@ class DropboxAuthManager {
 
     private async refreshAccessToken(): Promise<void> {
         try {
-            // console.log("refresh_token: ", process.env.DROPBOX_REFRESH_TOKEN!,
-            //     "client_id: ", process.env.DROPBOX_APP_KEY!,
-            //     "client_secret: ", process.env.DROPBOX_APP_SECRET!,);
-            
             const response = await fetch('https://api.dropboxapi.com/oauth2/token', {
                 method: 'POST',
                 headers: {
@@ -67,7 +59,6 @@ class DropboxAuthManager {
 
     async getAuthorizedDropboxInstance(): Promise<Dropbox> {
         const accessToken = await this.getAccessToken();
-        // console.log("accessToken from getAuthDropInstance: ", accessToken);
         const k1 = new Dropbox({ accessToken, fetch });
         return k1
     }

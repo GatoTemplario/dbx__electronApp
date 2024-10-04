@@ -1,29 +1,14 @@
 const { state } = require('../services/state');
-const projectCodeInput = document.createElement('input');
-const nameProject = document.createElement('label')
-const inputContainer = document.createElement('div');
+const projectCodeInput = document.querySelector('.explorer-name-input') as HTMLInputElement;
+// const nameProject = document.getElementById('titleDisplay') as HTMLElement;
 
 export function initInput() {
-    projectCodeInput.type = 'text';
-    projectCodeInput.placeholder = 'XXXXXX';
-    projectCodeInput.classList.add('project-title-input');
+    console.log("Init input");
+    if (localStorage.getItem('projectId')) {
+        projectCodeInput.value = localStorage.getItem('projectId');
+    }
     projectCodeInput.addEventListener('keydown', handleProjectCodeInput);
     projectCodeInput.addEventListener('input', validateProjectCode);
-
-    
-    inputContainer.classList.add('input-container');
-    inputContainer.appendChild(projectCodeInput);
-
-    const fullNombreProjecto = state.getState()?.name;
-    if(fullNombreProjecto){
-        const nombreProjecto = fullNombreProjecto.split('_').slice(1).join('-').trim();
-        nombreProjecto
-        nameProject.textContent = nombreProjecto;
-        nameProject.classList.add('project-name');
-        inputContainer.appendChild(nameProject);
-    }
-
-    document.body.appendChild(inputContainer);
 }
 function validateProjectCode(){
     const input = projectCodeInput.value;
@@ -42,9 +27,14 @@ function handleProjectCodeInput(event: KeyboardEvent){
         const input = projectCodeInput.value;
         if (/^\d{6}$/.test(input)) {
             const currentState = state.getState()
-            currentState.project = input
-            state.setState(currentState)
+            if (currentState.project !== input || !currentState.initialLoadComplete) {
+                currentState.project = input
+                currentState.initialLoadComplete = false  // Reset this flag
+                localStorage.setItem('projectId', state.getState().project);
+                state.setState(currentState)
+            }
         } else {
+            console.log("Invalid project code");
         }
     }
 }

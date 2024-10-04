@@ -3,3 +3,4 @@ dist
 dbx__appgit 
 .env
 key.json
+render_deprecated

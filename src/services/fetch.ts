@@ -95,12 +95,12 @@ function buildStructure(entries: ExtendedEntry[]): ObjRes {
     return secondElement;
 }
 
+
+
 async function getArbolOG(path: string): Promise<ExtendedEntry[]> {
     try {
         const dbx = await authManager.getAuthorizedDropboxInstance()
-        
         let response = await dbx.filesListFolder({ path, recursive: true });
-        // console.log("ALL Entries:", response.result.entries);
         
         
         let allEntries = response.result.entries.map((entry: any) => {
@@ -117,7 +117,7 @@ async function getArbolOG(path: string): Promise<ExtendedEntry[]> {
         });
         
         while (response.result.has_more) {
-            console.log("Pagination detected. Fetching remaining entries...");
+            console.log(`Fetching more entries for path ${path}...`);
             response = await dbx.filesListFolderContinue({ cursor: response.result.cursor });
             const newEntries = response.result.entries.map((entry: any) => {
             const modifiedEntry = {
@@ -132,91 +132,21 @@ async function getArbolOG(path: string): Promise<ExtendedEntry[]> {
             });
             allEntries = allEntries.concat(newEntries);
         }
-        // console.log("All entries fetched:", allEntries);
-        
+        console.log("All entries fetched:", allEntries);
+        console.log(`Total entries fetched for path ${path}:`, allEntries.length);
         return allEntries;
     } catch (error) {
         console.error("Error fetching folder contents:", error);
-        return [];
-    }
+         if (error.response) {
+                    console.error(`Error response:`, error.response.data);
+                }
+                throw error;
+            }
+        // return [];
 }
 
-// agregado para simular firebase 9/9
-// 
 
 
 
-// async function getLastModifiedTimestamp(filePath: string): Promise<number> {
-//     const dbx = await authManager.getAuthorizedDropboxInstance()
-//     const response = (await dbx.filesGetMetadata({ path: filePath })).result as any;
-//     const timestamp = new Date (response.server_modified)
-//     const getTime = timestamp.getTime()
-
-//     return getTime; // Convert to timestamp
-// }
-
-
-// function deepEqual(obj1: any, obj2: any): boolean {
-//     if (obj1 === obj2) return true;
-//     if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 == null || obj2 == null) return false;
-
-//     let keys1 = Object.keys(obj1);
-//     let keys2 = Object.keys(obj2);
-
-//     if (keys1.length !== keys2.length) return false;
-
-//     for (let key of keys1) {
-//         if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) return false;
-//     }
-
-//     return true;
-// }
-
-// async function checkForUpdatesAndRender() {
-//     const filePath = '/folder/rootfolder';
-    
-//     try {
-//         // Step 4: Fetch the latest data from Dropbox
-//         const fetchedData = await fetchJsonFromDropbox(filePath)
-//         console.log("Fetched Data: ", fetchedData);
-        
-
-//         // Step 5: Initialize StateManager if it doesn't exist
-//         if (!stateManager) {
-//             console.log("no state!");
-            
-//             stateManager = new StateManager(fetchedData);
-//             console.log("State Manager: ", stateManager);
-            
-//         }
-
-//         // Step 6: Compare fetched data with current state
-//         var currentState = stateManager.getCurrentData();
-//         console.log("Fetched Data2: ", fetchedData);
-//         console.log("State Manager: ", currentState);
-
-        
-//         if (!deepEqual(fetchedData, currentState)) {
-//             // Step 7: Merge fetched data with local changes
-//             currentState = stateManager.mergeWithFetchedData(fetchedData);
-
-//             // Step 8: Render the updated data
-//             renderData(currentState);
-//             console.log("Data updated and rendered");
-//         } else if (stateManager.hasChanges()) {
-//             // Step 9: Handle local changes
-//             const changes = stateManager.getChanges();
-//             // Implement logic to send changes to Dropbox
-//             // await sendChangesToDropbox(changes);
-//             console.log("Local changes detected. Consider syncing with Dropbox.");
-//         } else {
-//             console.log("No updates from Dropbox and no local changes.");
-//         }
-//     } catch (error) {
-//         console.error("Error checking for updates:", error);
-//     }
-// }
-
-// AGREGADO EXPORT THE CHECKFORUPDATES
 export {getArbolOG, buildStructure, ObjRes}
 

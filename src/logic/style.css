@@ -1,218 +1,210 @@
-/* General styling for the dark mode */
 body {
-    background-color: #1e1e1e;
-    color: #f0f0f0;
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    line-height: 1.6;
-  }
-  
-  /* Styling for headings */
-  h1, h2, h3, h4, h5, h6 {
-    color: #ffffff;
-  }
-  
-  /* Links styling */
-  a {
-    color: #1e90ff;
-    text-decoration: none;
-  }
-  
-  a:hover {
-    text-decoration: underline;
-  }
-  
-  /* Buttons */
-  button {
-    background-color: #333333;
-    color: #ffffff;
-    border: 1px solid #444444;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  button:hover {
-    background-color: #555555;
-  }
-  
-  /* Inputs */
-  /* input[type="text"], input[type="password"], textarea {
-    background-color: #2e2e2e;
-    color: #ffffff;
-    border: 1px solid #555555;
-    padding: 8px;
-    border-radius: 5px;
-  } */
-  
-  input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
-    outline: none;
-    border-color: #1e90ff;
-  }
-  
-  /* Tables */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  th, td {
-    padding: 10px;
-    text-align: left;
-    border: 1px solid #444444;
-  }
-  
-  th {
-    background-color: #333333;
-  }
-  
-  td {
-    background-color: #2e2e2e;
-  }
-  
-  /* Dark mode for code blocks */
-  code, pre {
-    background-color: #2d2d2d;
-    color: #ffffff;
-    padding: 10px;
-    border-radius: 5px;
-    display: block;
-    overflow-x: auto;
-  }
-  
-  /* Dark mode for forms */
-  form {
-    background-color: #333333;
-    padding: 20px;
-    border-radius: 5px;
-  }
-  
-  
-  /* a partir de aqui?? */
-  /* .project-code-input.valid {
-    border-color: green;
-  }
-  
-  .project-code-input.invalid {
-    border-color: red;
-  } */
-  
-  .project-code-feedback {
-    font-size: 0.8em;
-    margin-top: 5px;
-  }
-  
-  .project-code-feedback.success {
-    color: green;
-  }
-  
-  .project-code-feedback.error {
-    color: red;
-  }
-  .project-title-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .input-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .project-title-input {
-    background-color: #2e2e2e;
-    color: #ffffff;
-    border: 1px solid #555555;
-    padding: 8px;
-    border-radius: 5px;
-    font-size: 24px;
-    font-weight: bold;
-    width: 120px; /* Adjust the width to fit a 6-digit code */
-    margin-right: 10px;
-  }
-  .invalid{
-    color: rgb(118, 118, 118)
-  }
-  
-  .project-title-input:focus {
-    outline: none;
-    border-color: #1e90ff;
-  }
-  
-  .project-name {
-    background-color: #2e2e2e;
-    color: #ffffff;
-    border: 1px solid #555555;
-    padding: 8px;
-    border-radius: 5px;
-    font-size: 24px;
-    font-weight: bold;
-    flex-grow: 1;
-  }
-  
-  .project-code-feedback {
-    font-size: 0.8em;
-    margin-left: 10px;
-    color: #1e90ff;
-  }
-  
-  
-  /* Table styles */
-  .folder-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .folder-table thead {
-    background-color: #333333;
-  }
-  
-  .folder-table th, .folder-table td {
-    padding: 10px;
-    text-align: left;
-    border: 1px solid #444444;
-  }
-  
-  /* Header row styles */
-  .folder-table thead tr {
-    display: flex;
-    width: 100%;
-  }
-  
-  .folder-table th {
-    flex: 1;
-    position: relative;
-    padding-right: 15px;
-    box-sizing: border-box;
-  }
-  
-  /* Resizer styles */
-  .resizer {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 5px;
-    cursor: col-resize;
-    height: 100%;
-  }
-  
-  .resizer:hover, .resizing {
-    background-color: #1e90ff;
-  }
-  
-  /* Table body styles */
-  .folder-table tbody tr {
-    display: flex;
-    width: 100%;
-  }
-  
-  .folder-table td {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #121212; /* Dark background */
+  color: #e0e0e0; /* Light text color */
+}
+
+.file-explorer {
+  background-color: #1e1e1e; /* Darker background for containers */
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Stronger shadow for contrast */
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  background-color: #2c2c2c; /* Dark background for header */
+  padding: 10px;
+  border-bottom: 1px solid #444; /* Darker border */
+}
+
+.explorer-name-input {
+  font-size: 1.5em;
+  font-weight: bold;
+  border: none;
+  background-color: transparent;
+  color: #fff; /* White text */
+  margin-right: 10px;
+  padding: 5px;
+}
+
+.explorer-name-input:focus {
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.1); /* Slight light overlay on focus */
+}
+
+.title-display {
+  font-size: 1.2em;
+  color: #aaa; /* Lighter gray for secondary text */
+}
+
+.show-modal-btn {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  color: #fff; /* White for better visibility */
+  margin-left: auto;
+}
+
+.file-list {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.file-list th, .file-list td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #444; /* Darker borders */
+  position: relative;
+  color: #e0e0e0; /* Light text color */
+}
+
+.file-list th {
+  background-color: #2c2c2c; /* Darker header background */
+  font-weight: bold;
+  border-right: 1px solid #444;
+}
+
+.file-list th:last-child {
+  border-right: none;
+}
+
+.file-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  display: inline-block;
+}
+
+.deprecated {
+  opacity: 0.6;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 5px;
+  border: none;
+  background-color: transparent;
+  box-sizing: border-box;
+  color: #fff; /* White text */
+}
+
+.comment-input:focus {
+  outline: none;
+  background-color: rgba(76, 175, 80, 0.2); /* Light green overlay */
+}
+
+.resizer {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  cursor: col-resize;
+  user-select: none;
+  height: 100%;
+  z-index: 1;
+  background-color: rgba(255, 255, 255, 0.1); /* Subtle resizer background */
+}
+
+.resizer:hover, .resizing {
+  background-color: rgba(255, 255, 255, 0.2); /* Lighter on hover */
+}
+
+.file-list th:last-child .resizer,
+.file-list td:last-child .resizer {
+  display: none;
+}
+
+.indent {
+  display: inline-block;
+  width: 20px;
+}
+
+.folder-toggle {
+  cursor: pointer;
+  user-select: none;
+  margin-right: 5px;
+  color: #fff; /* White toggle text */
+}
+
+.folder-toggle:hover {
+  color: #76FF03; /* Bright green hover color */
+}
+
+.hidden {
+  display: none;
+}
+
+.selected {
+  background-color: #333; /* Slight highlight for selected rows */
+}
+
+.context-menu {
+  position: absolute;
+  background-color: #2c2c2c; /* Dark background for context menu */
+  border: 1px solid #444;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* Dark shadow */
+  z-index: 1000;
+}
+
+.context-menu ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.context-menu li {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: #e0e0e0; /* Light text */
+}
+
+.context-menu li:hover {
+  background-color: #444; /* Darker hover state */
+}
+
+.file-list tr {
+  cursor: pointer;
+}
+
+.dragging {
+  opacity: 0.5;
+}
+
+.drop-target {
+  background-color: #004d40; /* Dark green for drop target */
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75); /* Dark modal background */
+}
+
+.modal-content {
+  background-color: #333; /* Dark content background */
+  margin: 15% auto;
+  padding: 20px;
+  border-radius: 5px;
+  width: 300px;
+  text-align: center;
+  color: #fff; /* White text in modal */
+}
+
+.path-input {
+  width: 100%;
+  padding: 5px;
+  margin-top: 10px;
+  box-sizing: border-box;
+  background-color: #444; /* Dark input background */
+  color: #fff; /* White text */
+}

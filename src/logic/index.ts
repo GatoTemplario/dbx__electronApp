@@ -1,34 +1,31 @@
-const path1 = require('path');
-const { getDatabase, ref, set, get } = require("firebase/database");
+const path1                = require('path');
+const { getDatabase, ref, set, get, onValue } = require("firebase/database");
 const { getArbolOG, buildStructure, checkForUpdatesAndRender } = require('./services/fetch');
-const { renderData } = require('./renderer/renderStructure');
-const { rtdb, db } = require(path1.resolve(__dirname, './logic/db'))
-const { state } = require('./services/state')
+const { populateFileList } = require('./renderer/renderStructure');
+const { rtdb, db }         = require(path1.resolve(__dirname, './logic/db'))
+const { state }            = require('./services/state')
+const { startPeriodicSync} = require('./services/dropboxSync');
 
-async function uploadJson(data : any, fileName : string) {
+let isUpdatingFromRTDB = false;
+
+async function uploadJson(data: any, fileName: string) {
     try {
         const dbRef = ref(rtdb, `fileStructure/${fileName}`);
         await set(dbRef, data);
-
         console.log(`Successfully uploaded ${fileName} to Dropbox and updated Firebase`);
     } catch (error: any) {
         console.error("Error in uploadJson:", error);
         throw error;
-    }
+       }
 }
 
-// function que chequea primero si el ID es el mismo que el state, si es así, no hace nada.
-// Si el ID es diferente, primero busca el arbol del proyecto y luego se fija si existe en rtdb
-// Si existe, no hace nada. Si no existe, sube el arbol (sería la primera vez ever)
-async function projectIDChecker(currentProjectID : string, rootFolder : any){
+async function projectIDChecker(currentProjectID: string, rootFolder: any) {
     const currentState = state.getState();
     const newProjectID = currentState.project;
 
-    if (newProjectID && newProjectID !== currentProjectID) {
-        console.log("New project ID detected. Checking if update is needed...");
-        currentProjectID = newProjectID;
-
-        // First, check if the project structure already exists in the database
+    if (newProjectID && (newProjectID !== currentProjectID || !currentState.initialLoadComplete)) {
+        console.log("New project ID detected or initial load. Checking if update is needed...");
+        
         const dbRef = ref(rtdb, `fileStructure/${newProjectID}`);
         const snapshot = await get(dbRef);
 
@@ -43,26 +40,57 @@ async function projectIDChecker(currentProjectID : string, rootFolder : any){
                 const particularFolder = buildStructure(particularEntry);
 
                 await uploadJson(particularFolder, newProjectID);
-                state.setState({ tree: particularFolder });
-                console.log("path 1:");
-                
-                renderData(state.getState().tree);
+                state.setState({ project: newProjectID, tree: particularFolder, initialLoadComplete: true });
                 console.log("Project data uploaded for new project ID: ", newProjectID);
             } else {
                 console.log("No matching folder found for project ID: ", newProjectID);
+                state.setState({ initialLoadComplete: true });
             }
         } else {
-            console.log("Project structure already exists in database. Fetching and updating state...");
+            console.log("Project structure exists in database. Fetching and updating state...");
             const existingStructure = snapshot.val();
-            console.log("Existing structure: ", existingStructure);
-            
-            // Update state with the existing structure from the database
-            state.setState( existingStructure );
-            console.log("path 2:");
-            renderData(existingStructure);
+            state.setState({ project: newProjectID, tree: existingStructure, initialLoadComplete: true });
         }
+        
+        return newProjectID;
     } else {
-        console.log("No changes in project ID or project ID is null/undefined");
+        console.log("No changes in project ID or initial load already complete");
+        return currentProjectID;
+    }
+}
+
+// Function to update RTDB
+function updateRTDB(projectId: string, treeData: any) {
+    const dbRef = ref(rtdb, `fileStructure/${projectId}`);
+    set(dbRef, treeData).catch(error => {
+        console.error("Error updating RTDB:", error);
+    });
+}
+
+// Function to handle RTDB updates
+function handleRTDBUpdate(snapshot: any) {
+    if (snapshot.exists()) {
+        const updatedTree = snapshot.val();
+        console.log("Detected changes in Firebase, updating state...");
+        isUpdatingFromRTDB = true;
+        state.setState({ ...state.getState(), tree: updatedTree });
+        isUpdatingFromRTDB = false;
+    }
+}
+
+// Set up RTDB listener
+function setupRTDBListener(projectId: string) {
+    const dbRef = ref(rtdb, `fileStructure/${projectId}`);
+    return onValue(dbRef, handleRTDBUpdate, (error) => {
+        console.error("Error listening for changes in Firebase RTDB:", error);
+    });
+}
+
+// Function to handle state changes
+function handleStateChange() {
+    const currentState = state.getState();
+    if (currentState.initialLoadComplete && !isUpdatingFromRTDB) {
+        updateRTDB(currentState.project, currentState.tree);
     }
 }
 
@@ -70,22 +98,35 @@ async function main() {
     try {
         state.initState()
         const currentState = state.getState();
-        var currentProjectID = currentState.project;
+        let currentProjectID = currentState.project;
+
+        const projectsFolderPath = currentState.projectsFolderPath;
         
-        const allEntries = await getArbolOG('/folder');
-        console.log("allEntries: ", allEntries);
-        
+        const allEntries = await getArbolOG(projectsFolderPath);
         const rootFolder = buildStructure(allEntries);
 
-            console.log("rootFolder: ", rootFolder);
+        console.log("rootFolder: ", rootFolder);
+
+        // Set up initial RTDB listener
+        let rtdbListener = setupRTDBListener(currentProjectID);
         
-        state.suscribe( async () => {
-            await projectIDChecker(currentProjectID, rootFolder);
-        })
+        state.subscribe(async () => {
+            const newState = state.getState();
+            if (newState.project !== currentProjectID) {
+                // Project has changed, update listener
+                if (rtdbListener) rtdbListener();
+                currentProjectID = newState.project;
+                rtdbListener = setupRTDBListener(currentProjectID);
+            }
+            currentProjectID = await projectIDChecker(currentProjectID, rootFolder);
+            handleStateChange();
+
+             // Start periodic sync with Dropbox
+            startPeriodicSync();
+        });
     } catch (error) {
         console.error("Error:", error);
     }
 }
-
 
 main();
