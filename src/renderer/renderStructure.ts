@@ -3,6 +3,8 @@ const {state}     = require('../services/state');
 const {initInput} = require('../renderer/initInput');
 const path        = require('path');
 const { preserveUIState, getPreservedUIState, clearPreservedUIState, debouncedStateUpdate } = require('./uiStatePreservation'); 
+import { isFolderCollapsed, toggleFolderState } from './folderUIState';
+
 
 let selectedItems = [];
 
@@ -26,28 +28,63 @@ function getFileIcon(type) {
 
 
 export function populateFileList(structure, level = 0, parentPath = '') {
-  const fileList = document.getElementById('fileList');
-  if (!structure) return;
 
-  if (structure.files) {
-    // console.log("structure: ",structure.files);
+    const fileList = document.getElementById('fileList');
+    if (!structure) return;
+
+    // Helper function to sort items
+    const sortItems = (items) => {
+      return items.sort((a, b) => {
+        // Put folders first
+        if (a.folders && !b.folders) return -1;
+        if (!a.folders && b.folders) return 1;
+        
+        // Then sort alphabetically
+        return a.name.localeCompare(b.name);
+      });
+    };
+
+    // Combine and sort folders and files
+    const allItems = [
+      ...(structure.folders || []).map(folder => ({ ...folder, type: 'folder' })),
+      ...(structure.files || []).map(file => ({ ...file, type: 'file' }))
+    ];
+
+    const sortedItems = sortItems(allItems);
+
+    sortedItems.forEach(item => {
+  renderItem(item, item.type, level, parentPath);
+    if (item.type === 'folder' && !isFolderCollapsed(item.id)) {
+      populateFileList(item, level + 1, `${parentPath}/${item.name}`);
+    }
+  });
+
+  // const fileList = document.getElementById('fileList');
+  // if (!structure) return;
+
+  // if (structure.files) {
+  //   // console.log("structure: ",structure.files);
     
-    structure.files.forEach(file => renderItem(file, file.extension, level, parentPath));
-  }
-  if (structure.folders) {
-    structure.folders.forEach(folder => {
-      renderItem(folder, 'folder', level, parentPath);
-      populateFileList(folder, level + 1, `${parentPath}/${folder.name}`);
-    });
-  }
+  //   structure.files.forEach(file => renderItem(file, file.extension, level, parentPath));
+  // }
+  // if (structure.folders) {
+  //   structure.folders.forEach(folder => {
+  //     renderItem(folder, 'folder', level, parentPath);
+  //     if (!isFolderCollapsed(folder.id)) {
+  //             populateFileList(folder, level + 1, `${parentPath}/${folder.name}`);
+  //           }
+  //     // populateFileList(folder, level + 1, `${parentPath}/${folder.name}`);
+  //   });
+  // }
 
   function renderItem(item, itemType, level, parentPath) {
-    const row = document.createElement('tr');
-    row.dataset.itemType = itemType;
+    const row  = document.createElement('tr');
     const path = parentPath ? `${parentPath}/${item.name}` : item.name;
+    var nameWithoutExtension = item.name;
+    row.dataset.itemType = itemType;
+    row.dataset.folderId = item.id;  
     // const indentWidth = itemType === 'folder' ? 0 : 20; // Width of each indent level in pixels
     // const indent = `<span class="indent" style="width:${level * indentWidth}px"></span>`;
-    var nameWithoutExtension = item.name;
     if (itemType !== 'folder') {
       nameWithoutExtension = item.name.split('.').slice(0, -1).join('.');
     }
@@ -56,15 +93,22 @@ export function populateFileList(structure, level = 0, parentPath = '') {
     const fileIndentClass = itemType !== 'folder' ? 'file-indent' : '';
     
     const folderToggle = document.createElement('span');
+    // if (itemType === 'folder') {
+      
+    //   folderToggle.classList.add('folder-toggle');
+    //   folderToggle.textContent = '▼';
+    //   folderToggle.addEventListener('click', function () {
+    //     toggleFolder(folderToggle);
+    //   });
+    // }
     if (itemType === 'folder') {
-      folderToggle.classList.add('folder-toggle');
-      folderToggle.textContent = '▼';
+      folderToggle.textContent = isFolderCollapsed(item.id) ? '▶ ' : '▼ ';
       folderToggle.addEventListener('click', function () {
-        toggleFolder(folderToggle);
+        toggleFolder(this);
+        refreshFileList();
       });
-      // folderToggle.style.cursor = 'pointer';
-      // folderToggle.style.marginLeft = `${level * indentWidth}px`; // Add left margin for indentation
     }
+
 
     // Create the icon
     const icon = document.createElement('span');
@@ -249,28 +293,34 @@ function openFileOrFolder(item) {
 }
 
 
+// function toggleFolder(element) {
+//   const row = element.closest('tr');
+//   const level = parseInt(row.dataset.level);
+//   let next = row.nextElementSibling;
+
+//   const isCollapsing = element.textContent === '▼';
+//   element.textContent = isCollapsing ? '▶' : '▼';
+
+//   while (next && parseInt(next.dataset.level) > level) {
+//     if (isCollapsing) {
+//       next.classList.add('hidden');
+//       const folderToggle = next.querySelector('.folder-toggle');
+//       if (folderToggle) {
+//         folderToggle.textContent = '▶';
+//       }
+//     } else {
+//       if (parseInt(next.dataset.level) === level + 1) {
+//         next.classList.remove('hidden');
+//       }
+//     }
+//     next = next.nextElementSibling;
+//   }
+// }
 function toggleFolder(element) {
   const row = element.closest('tr');
-  const level = parseInt(row.dataset.level);
-  let next = row.nextElementSibling;
-
-  const isCollapsing = element.textContent === '▼';
-  element.textContent = isCollapsing ? '▶' : '▼';
-
-  while (next && parseInt(next.dataset.level) > level) {
-    if (isCollapsing) {
-      next.classList.add('hidden');
-      const folderToggle = next.querySelector('.folder-toggle');
-      if (folderToggle) {
-        folderToggle.textContent = '▶';
-      }
-    } else {
-      if (parseInt(next.dataset.level) === level + 1) {
-        next.classList.remove('hidden');
-      }
-    }
-    next = next.nextElementSibling;
-  }
+  const folderId = row.dataset.folderId; // Ensure you add this data attribute when rendering
+  toggleFolderState(folderId);
+  refreshFileList();
 }
 
 function toggleDeprecated(checkbox, path) {
@@ -603,21 +653,33 @@ function moveSelectedItems() {
 //   }
 // }
 
+
+
+// function refreshFileList() {
+//   const fileList = document.getElementById('fileList');
+//   fileList.innerHTML = '';
+//   const currentState = state.getState();
+//   populateFileList(currentState.tree);
+//   // initDragAndDrop();
+
+//   // Update project name display
+//   const titleDisplay = document.getElementById('titleDisplay');
+//   if (titleDisplay && currentState.project) {
+//       const fullProjectName = currentState.project;
+//       const projectName = fullProjectName.split('-').slice(1).join('-').trim();
+//       titleDisplay.textContent = projectName;
+//   }
+// }
 function refreshFileList() {
   const fileList = document.getElementById('fileList');
   fileList.innerHTML = '';
   const currentState = state.getState();
   populateFileList(currentState.tree);
-  // initDragAndDrop();
-
-  // Update project name display
-  const titleDisplay = document.getElementById('titleDisplay');
-  if (titleDisplay && currentState.project) {
-      const fullProjectName = currentState.project;
-      const projectName = fullProjectName.split('-').slice(1).join('-').trim();
-      titleDisplay.textContent = projectName;
-  }
+  initResizers();
+  setTitle();
 }
+
+
 
 function initResizers() {
   const table = document.getElementById('fileTable');
@@ -700,14 +762,17 @@ function setTitle() {
   var nombreProjecto = ""
   
   if(fullNombreProjecto){
-    nombreProjecto = " - " + fullNombreProjecto.split('_').slice(1).join('-').trim();
+    // nombreProjecto = " - " + fullNombreProjecto.split('_').slice(1).join('-').trim();
   }
-  localStorage.setItem('projectName', nombreProjecto);
+  // localStorage.setItem('projectName', fullNombreProjecto);
 
   if(titleDisplay.textContent !== nombreProjecto) {
     titleDisplay.textContent = nombreProjecto;
   }else{
-    titleDisplay.textContent = currentState.tree.name;
+    // console.log("vamos siempre por aqui??");
+    // console.log(currentState.tree.name);
+    
+    titleDisplay.textContent = " - " + fullNombreProjecto;
   }
 }
 

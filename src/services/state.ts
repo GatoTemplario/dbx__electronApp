@@ -22,7 +22,6 @@ interface StateData {
 let isUpdatingFromRTDB = false;
 const state = {
     data: {
-        project: "",
         tree: {
             name: "",
             comment: "",
@@ -32,8 +31,9 @@ const state = {
             folders: [],
         },
         initialLoadComplete: false,
-        projectsFolderPath: "",
         localStoragePath: "",
+        project: "",
+        projectsFolderPath: "",
     } as StateData,
     
     listeners: [],
