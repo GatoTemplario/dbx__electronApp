@@ -38,6 +38,7 @@ const state = {
     
     listeners: [],
     rtdbListener: null as null | (() => void),
+    updatingFromSync: false,
 
 
     initState() {
@@ -79,6 +80,10 @@ const state = {
         }
 
         console.log("state changed!", this.data);
+    },
+
+    setUpdatingFromSync(value: boolean) {
+        this.updatingFromSync = value;
     },
 
     subscribe(callback: () => any) {

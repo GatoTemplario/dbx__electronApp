@@ -3,7 +3,7 @@ const projectCodeInput = document.querySelector('.explorer-name-input') as HTMLI
 // const nameProject = document.getElementById('titleDisplay') as HTMLElement;
 
 export function initInput() {
-    console.log("Init input");
+    // console.log("Init input");
     if (localStorage.getItem('projectId')) {
         projectCodeInput.value = localStorage.getItem('projectId');
     }

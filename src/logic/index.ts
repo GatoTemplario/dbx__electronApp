@@ -4,7 +4,7 @@ const { getArbolOG, buildStructure, checkForUpdatesAndRender, fetchChildProject 
 const { populateFileList } = require('./renderer/renderStructure');
 const { rtdb, db }         = require(path1.resolve(__dirname, './logic/db'))
 const { state }            = require('./services/state')
-const { startSync,startPeriodicSync} = require('./services/dropboxSync');
+const { startPeriodicSync, startSimplifiedSync} = require('./services/dropboxSync');
 const { dropboxSyncManager } = require('./services/dropboxSync');
 
 let isUpdatingFromRTDB = false;
@@ -116,6 +116,8 @@ function findProjectFolder(rootFolders, projectId) {
     return null;
 }
 
+
+
 async function main() {
     try {
         state.initState()
@@ -140,34 +142,34 @@ async function main() {
                 rtdbListener = setupRTDBListener(currentProjectID);
             }
             
-        // Step 2: Check if project ID has changed or initial load is not complete
-        if (newState.project && (newState.project !== currentProjectID || !newState.initialLoadComplete)) {
-            const projectFolder = findProjectFolder(allEntries, newState.project);
-            
-            if (projectFolder) {
-                const projectContents = await fetchChildProject(newState.project, projectFolder);
+            // Step 2: Check if project ID has changed or initial load is not complete
+            if (newState.project && (newState.project !== currentProjectID || !newState.initialLoadComplete)) {
+                const projectFolder = findProjectFolder(allEntries, newState.project);
                 
-                if (projectContents) {
-                    state.setState({
-                        ...newState,
-                        ...projectContents
-                    });
+                if (projectFolder) {
+                    const projectContents = await fetchChildProject(newState.project, projectFolder);
+                    
+                    if (projectContents) {
+                        state.setState({
+                            ...newState,
+                            ...projectContents
+                        });
+                    } else {
+                        console.log(`Root folder for project ID ${newState.project} not found in structured contents`);
+                        state.setState({ ...newState, initialLoadComplete: true });
+                    }
                 } else {
-                    console.log(`Root folder for project ID ${newState.project} not found in structured contents`);
+                    console.log(`Project folder for ID ${newState.project} not found`);
                     state.setState({ ...newState, initialLoadComplete: true });
                 }
-            } else {
-                console.log(`Project folder for ID ${newState.project} not found`);
-                state.setState({ ...newState, initialLoadComplete: true });
             }
-        }
             
             handleStateChange();
         });
 
-        // Start periodic sync with Dropbox
-        // startPeriodicSync();
-        startPeriodicSync()
+        
+        // startPeriodicSync()
+        startSimplifiedSync()
 
 
 
