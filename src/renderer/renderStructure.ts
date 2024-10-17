@@ -59,32 +59,13 @@ export function populateFileList(structure, level = 0, parentPath = '') {
     }
   });
 
-  // const fileList = document.getElementById('fileList');
-  // if (!structure) return;
-
-  // if (structure.files) {
-  //   // console.log("structure: ",structure.files);
-    
-  //   structure.files.forEach(file => renderItem(file, file.extension, level, parentPath));
-  // }
-  // if (structure.folders) {
-  //   structure.folders.forEach(folder => {
-  //     renderItem(folder, 'folder', level, parentPath);
-  //     if (!isFolderCollapsed(folder.id)) {
-  //             populateFileList(folder, level + 1, `${parentPath}/${folder.name}`);
-  //           }
-  //     // populateFileList(folder, level + 1, `${parentPath}/${folder.name}`);
-  //   });
-  // }
-
   function renderItem(item, itemType, level, parentPath) {
     const row  = document.createElement('tr');
     const path = parentPath ? `${parentPath}/${item.name}` : item.name;
     var nameWithoutExtension = item.name;
     row.dataset.itemType = itemType;
     row.dataset.folderId = item.id;  
-    // const indentWidth = itemType === 'folder' ? 0 : 20; // Width of each indent level in pixels
-    // const indent = `<span class="indent" style="width:${level * indentWidth}px"></span>`;
+
     if (itemType !== 'folder') {
       nameWithoutExtension = item.name.split('.').slice(0, -1).join('.');
     }
@@ -93,14 +74,7 @@ export function populateFileList(structure, level = 0, parentPath = '') {
     const fileIndentClass = itemType !== 'folder' ? 'file-indent' : '';
     
     const folderToggle = document.createElement('span');
-    // if (itemType === 'folder') {
-      
-    //   folderToggle.classList.add('folder-toggle');
-    //   folderToggle.textContent = '▼';
-    //   folderToggle.addEventListener('click', function () {
-    //     toggleFolder(folderToggle);
-    //   });
-    // }
+
     if (itemType === 'folder') {
       folderToggle.textContent = isFolderCollapsed(item.id) ? '▶ ' : '▼ ';
       folderToggle.addEventListener('click', function () {
@@ -293,29 +267,6 @@ function openFileOrFolder(item) {
 }
 
 
-// function toggleFolder(element) {
-//   const row = element.closest('tr');
-//   const level = parseInt(row.dataset.level);
-//   let next = row.nextElementSibling;
-
-//   const isCollapsing = element.textContent === '▼';
-//   element.textContent = isCollapsing ? '▶' : '▼';
-
-//   while (next && parseInt(next.dataset.level) > level) {
-//     if (isCollapsing) {
-//       next.classList.add('hidden');
-//       const folderToggle = next.querySelector('.folder-toggle');
-//       if (folderToggle) {
-//         folderToggle.textContent = '▶';
-//       }
-//     } else {
-//       if (parseInt(next.dataset.level) === level + 1) {
-//         next.classList.remove('hidden');
-//       }
-//     }
-//     next = next.nextElementSibling;
-//   }
-// }
 function toggleFolder(element) {
   const row = element.closest('tr');
   const folderId = row.dataset.folderId; // Ensure you add this data attribute when rendering
@@ -525,151 +476,7 @@ function moveSelectedItems() {
   hideContextMenu();
 }
 
-// function initDragAndDrop() {
-//   const fileList = document.getElementById('fileList');
-//   let draggedItems = [];
 
-//   fileList.addEventListener('dragstart', (e: any) => {
-//     if (e.target.tagName === 'TR') {
-//       draggedItems = selectedItems.length > 0 ? selectedItems : [e.target];
-//       draggedItems.forEach(item => item.classList.add('dragging'));
-//       e.dataTransfer.setData('text/plain', '');
-//     }
-//   });
-
-//   fileList.addEventListener('dragover', (e: any) => {
-//     e.preventDefault();
-//     const targetRow = e.target.closest('tr');
-//     if (targetRow && !draggedItems.includes(targetRow)) {
-//       const isFolder = targetRow.querySelector('.folder-toggle') !== null;
-//       if (isFolder) {
-//         targetRow.classList.add('drop-target');
-//       }
-//     }
-//   });
-
-//   fileList.addEventListener('dragleave', (e: any) => {
-//     const targetRow = e.target.closest('tr');
-//     if (targetRow) {
-//       targetRow.classList.remove('drop-target');
-//     }
-//   });
-
-//   fileList.addEventListener('drop', (e: any) => {
-//     e.preventDefault();
-//     const targetRow = e.target.closest('tr');
-//     if (targetRow && !draggedItems.includes(targetRow)) {
-//       const targetPath = targetRow.dataset.path.split('/');
-//       const currentState = state.getState();
-//       const isTargetFolder = targetRow.querySelector('.folder-toggle') !== null;
-      
-//       if (isTargetFolder) {
-//         draggedItems.forEach(item => {
-//           const sourcePath = item.dataset.path.split('/');
-//           moveItem(currentState.tree, sourcePath, targetPath);
-//         });
-//         state.setState(currentState);
-//         refreshFileList();
-//       }
-//     }
-//     draggedItems.forEach(item => item.classList.remove('dragging'));
-//     if (targetRow) {
-//       targetRow.classList.remove('drop-target');
-//     }
-//   });
-
-//   fileList.addEventListener('dragend', () => {
-//     draggedItems.forEach(item => item.classList.remove('dragging'));
-//     const dropTargets = fileList.querySelectorAll('.drop-target');
-//     dropTargets.forEach(target => target.classList.remove('drop-target'));
-//   });
-// }
-
-// function moveItem(tree, sourcePath, targetPath) {
-//   const sourceParentPath = sourcePath.slice(0, -1);
-//   const sourceParent = findItemByPath(tree, sourceParentPath);
-//   const sourceItem = sourceParent ? 
-//     (sourceParent.files && sourceParent.files.find(f => f.name === sourcePath[sourcePath.length - 1])) ||
-//     (sourceParent.folders && sourceParent.folders.find(f => f.name === sourcePath[sourcePath.length - 1])) :
-//     findItemByPath(tree, sourcePath);
-
-//   const targetItem = findItemByPath(tree, targetPath);
-  
-//   if (sourceItem && targetItem && sourceItem !== targetItem) {
-//     // Remove the item from its original location
-//     removeItemFromParent(tree, sourcePath);
-
-//     // Ensure the target has a 'folders' array if it's a folder
-//     if (!targetItem.folders) {
-//       targetItem.folders = [];
-//     }
-    
-//     // Ensure the target has a 'files' array
-//     if (!targetItem.files) {
-//       targetItem.files = [];
-//     }
-
-//     // Add the item to the target location
-//     if (sourceItem.folders || sourceItem.files) {
-//       // It's a folder
-//       targetItem.folders.push(sourceItem);
-//     } else {
-//       // It's a file
-//       targetItem.files.push(sourceItem);
-//     }
-
-//     // Update the path of the moved item and its children
-//     updateItemPath(sourceItem, [...targetPath, sourceItem.name]);
-//   }
-//   function updateItemPath(item, newPath) {
-//     item.path = newPath.join('/');
-//     if (item.folders) {
-//       item.folders.forEach(folder => updateItemPath(folder, [...newPath, folder.name]));
-//     }
-//     if (item.files) {
-//       item.files.forEach(file => file.path = [...newPath, file.name].join('/'));
-//     }
-//   }
-// }
-// function findItemByPath(item, pathParts) {
-//   if (pathParts.length === 0) return item;
-//   const [current, ...rest] = pathParts;
-//   const child = item.folders?.find(f => f.name === current) || item.files?.find(f => f.name === current);
-//   return child ? findItemByPath(child, rest) : null;
-// }
-
-// function removeItemFromParent(item, pathParts) {
-//   if (pathParts.length === 1) {
-//     if (item.folders) {
-//       item.folders = item.folders.filter(folder => folder.name !== pathParts[0]);
-//     }
-//     if (item.files) {
-//       item.files = item.files.filter(file => file.name !== pathParts[0]);
-//     }
-//   } else {
-//     const [current, ...rest] = pathParts;
-//     const child = item.folders && item.folders.find(f => f.name === current);
-//     if (child) removeItemFromParent(child, rest);
-//   }
-// }
-
-
-
-// function refreshFileList() {
-//   const fileList = document.getElementById('fileList');
-//   fileList.innerHTML = '';
-//   const currentState = state.getState();
-//   populateFileList(currentState.tree);
-//   // initDragAndDrop();
-
-//   // Update project name display
-//   const titleDisplay = document.getElementById('titleDisplay');
-//   if (titleDisplay && currentState.project) {
-//       const fullProjectName = currentState.project;
-//       const projectName = fullProjectName.split('-').slice(1).join('-').trim();
-//       titleDisplay.textContent = projectName;
-//   }
-// }
 function refreshFileList() {
   const fileList = document.getElementById('fileList');
   fileList.innerHTML = '';
@@ -746,7 +553,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Subscribe to state changes
   state.subscribe(() => {
-    // console.log("Rendering file structure");
     refreshFileList();
     initResizers();
     // Aqui iba initDragAndDrop();
@@ -843,10 +649,3 @@ function initSettingsDialog() {
 
 
 }
-  
-  // Ejemplo de uso
-  // const originalPath = localStorage.getItem("projectPath");
-// const processedPaths = processPath(originalPath);
-
-// console.log(processedPaths.localStorage);       // "D:\\User\\Documents\\Dropbox\\"
-// console.log(processedPaths.projectsFolderPath); // "/FUNDAMENTA ING/FDM EJECUTIVO/03. PROYECTOS/2023"

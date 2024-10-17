@@ -71,8 +71,7 @@ const state = {
         if (newState.localStoragePath) {
             localStorage.setItem("localStoragePath", newState.localStoragePath);
         }
-
-        const oldState = { ...this.data };
+        
         this.data = {...this.data, ...newState};
 
         for (const cb of this.listeners) {

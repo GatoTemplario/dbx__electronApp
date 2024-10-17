@@ -102,7 +102,9 @@ function buildStructure(entries: ExtendedEntry[]): ObjRes {
 
 
 
-async function fetchGoogleDriveProjectFolder(gDrive: any, projectCode: string): Promise<any> {
+async function fetchGoogleDriveProjectFolder( projectCode: string ): Promise<any> {
+    const gDrive = await driveAuthManager.getAuthorizedDriveInstance();
+
     try {
         // Step 1: Search for the folder containing the project code
         const folderResponse = await gDrive.files.list({
@@ -112,87 +114,80 @@ async function fetchGoogleDriveProjectFolder(gDrive: any, projectCode: string): 
         });
 
         const projectFolder = folderResponse.data.files[0];
+
+        const numberlessName = projectFolder.name.replace(/^\d{6}_/, '')
+        const parsedName = numberlessName.replace(/_/g, ' ')
+        
+        // console.log("folderResponse", folderResponse);
+        // console.log("parsedName", parsedName);
+        
+        
         if (!projectFolder) {
             throw new Error(`No folder found containing project code: ${projectCode}`);
         }
 
-        // Step 2: Fetch all files and subfolders within the project folder
-        const filesResponse = await gDrive.files.list({
-            q: `'${projectFolder.id}' in parents`,
-            fields: 'files(id, name, mimeType, parents, modifiedTime)',
-            spaces: 'drive'
-        });
+        // Step 2: Fetch all files and subfolders within the project folder recursively
+        const contents = await fetchGoogleDriveFolderContentsRecursively(gDrive, projectFolder.id);
 
-        // Step 3: Process and structure the fetched data
-        const processedFiles = filesResponse.data.files.map((file: any) => ({
-            id: file.id,
-            name: file.name,
-            type: file.mimeType === 'application/vnd.google-apps.folder' ? 'folder' : 'file',
-            modifiedTime: file.modifiedTime
-        }));
-
-        return {
+        // Step 3: Structure the data to match the state.ts format
+        const structuredData = {
+            name: parsedName,
+            comment: '',
             id: projectFolder.id,
-            name: projectFolder.name,
-            files: processedFiles
+            path: `/${projectFolder.name}`,
+            files: contents.filter(entry => entry.tag === 'file'),
+            folders: contents.filter(entry => entry.tag === 'folder')
         };
+
+        return structuredData;
     } catch (error) {
         console.error('Error fetching Google Drive project folder:', error);
         throw error;
     }
 }
-// 
-// async function setupGoogleDriveAuth() {
-//     try {
-//         if (!driveAuthManager.isAuthorized()) {
-//             await performInitialAuthorization();
-//         } else {
-//             console.log('Already authorized. Attempting to use existing credentials...');
-//             try {
-//                 await driveAuthManager.getAccessToken();
-//                 console.log('Existing credentials are valid.');
-//             } catch (error) {
-//                 console.error('Error using existing credentials:', error);
-//                 console.log('Attempting reauthorization...');
-//                 await performInitialAuthorization();
-//             }
-//         }
-//     } catch (error) {
-//         console.error('Authorization process failed:', error);
-//     }
-// }
+
+async function fetchGoogleDriveFolderContentsRecursively(gDrive: any, folderId: string, path: string = '/'): Promise<ExtendedEntry[]> {
+    try {
+        const response = await gDrive.files.list({
+            q: `'${folderId}' in parents`,
+            fields: 'files(id, name, mimeType, modifiedTime)',
+            spaces: 'drive'
+        });
+
+        const entries: ExtendedEntry[] = [];
+
+        for (const file of response.data.files) {
+            const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
+            const entry: ExtendedEntry = {
+                tag: isFolder ? 'folder' : 'file',
+                name: file.name,
+                path_lower: `${path}${file.name}`,
+                id: file.id,
+                active: true,
+                comment: '',
+                extension: isFolder ? '' : file.name.split('.').pop() || '',
+                children: []
+            };
+
+            if (isFolder) {
+                entry.children = await fetchGoogleDriveFolderContentsRecursively(gDrive, file.id, `${path}${file.name}/`);
+            }
+
+            entries.push(entry);
+        }
+
+        return entries;
+    } catch (error) {
+        console.error('Error fetching Google Drive folder contents:', error);
+        throw error;
+    }
+}
 
 
 
-// async function performInitialAuthorization() {
-//     const authUrl = driveAuthManager.generateAuthUrl();
-//     console.log('Authorize this app by visiting this url:', authUrl);
 
-//     const app = express();
-//     const authPromise = new Promise((resolve, reject) => {
-//         app.get('/oauth2callback', async (req, res) => {
-//             const { code } = req.query;
-//             try {
-//                 await driveAuthManager.getTokensFromCode(code as string);
-//                 res.send('Authorization successful! You can close this window.');
-//                 resolve(null);
-//             } catch (error) {
-//                 console.error('Error during token exchange:', error);
-//                 res.status(500).send('Authorization failed. Please try again.');
-//                 reject(error);
-//             }
-//             server.close();
-//         });
-//     });
 
-//     const server = app.listen(3000, () => {
-//         console.log('Listening on port 3000 for OAuth2 callback');
-//     });
 
-//     await authPromise;
-// }
-
-// Call this function before using any Google Drive functionality
 
 
 
@@ -204,55 +199,6 @@ async function fetchGoogleDriveProjectFolder(gDrive: any, projectCode: string): 
 
 async function getArbolOG(path: string, depth: number = 2): Promise<ExtendedEntry[]> {
     const dbx    = await authManager.getAuthorizedDropboxInstance();
-    const gDrive = await driveAuthManager.getAuthorizedDriveInstance();
-    
-    console.log("gDrive", gDrive);
-
-
-
-
-
-    // Fetch from Google Drive
-    const projectCode = '171106'; // This should be dynamically set based on your requirements
-    try {
-        const googleDriveProject = await fetchGoogleDriveProjectFolder(gDrive, projectCode);
-        console.log('Google Drive project folder:', googleDriveProject);
-
-        // Merge Google Drive data with Dropbox data
-        // This is a simple example; you might need to adjust this based on your data structure
-        
-        return googleDriveProject;
-    } catch (error) {
-        console.error('Error fetching Google Drive data:', error);
-        // If there's an error with Google Drive, return just the Dropbox entries
-        // return dropboxEntries;
-    }
-    // Test Google Drive file listing
-    // try {
-    //     console.log("Testing Google Drive file listing...");
-    //     const response = await gDrive.files.list({
-    //         pageSize: 20,
-    //         fields: 'nextPageToken, files(id, name, mimeType, parents, size)',
-    //         q: "name contains '171106'",
-    //     });
-    //     const files = response.data.files;
-    //     console.log("response: ",response);
-        
-    //     if (files.length) {
-    //         console.log('Files found in Google Drive:');
-    //         // files.forEach((file) => {
-    //         //     console.log(`${file.name} (${file.id}) - Type: ${file.mimeType}`);
-    //         // });
-    //     } else {
-    //         console.log('No files found in Google Drive.');
-    //     }
-    // } catch (error) {
-    //     console.error('Error listing files from Google Drive:', error);
-    // }
-    
-    
-    
-    
     
     const cacheRef = ref(rtdb, `cachedStructures`);
     
@@ -291,16 +237,6 @@ async function fetchArbolOGFolderContentsRecursively(dbx : any, path: string, de
       ? dbx.filesListFolderContinue({ cursor })
       : dbx.filesListFolder({ path, recursive: false, limit: 100 }));
         
-      
-      
-      
-      
-      console.log("response", response);
-
-
-
-
-      
       const entries = response.result.entries.map((entry: any) => {
         const modifiedEntry = {
                 ...entry,
@@ -414,4 +350,4 @@ function getFileExtension(fileName: string): string {
 }
   
   // Update the export statement
-  export { getArbolOG, buildStructure, ObjRes, fetchChildProject };
+  export { getArbolOG, buildStructure, ObjRes, fetchChildProject, fetchGoogleDriveProjectFolder };

@@ -1,6 +1,6 @@
 const path1                = require('path');
 const { getDatabase, ref, set, get, onValue } = require("firebase/database");
-const { getArbolOG, buildStructure, checkForUpdatesAndRender, fetchChildProject } = require('./services/fetch');
+const { getArbolOG, buildStructure, checkForUpdatesAndRender, fetchChildProject, fetchGoogleDriveProjectFolder } = require('./services/fetch');
 const { populateFileList } = require('./renderer/renderStructure');
 const { rtdb, db }         = require(path1.resolve(__dirname, './logic/db'))
 const { state }            = require('./services/state')
@@ -126,9 +126,13 @@ async function main() {
 
         const projectsFolderPath = currentState.projectsFolderPath;
         
+        
+
+
+
         // Step 1: Fetch the overall structure
-        const allEntries = await getArbolOG(projectsFolderPath);
-        console.log("allEntries: ", allEntries);
+        // const allEntries = await getArbolOG(projectsFolderPath);
+        // console.log("allEntries: ", allEntries);
         
         // Set up initial RTDB listener
         let rtdbListener = setupRTDBListener(currentProjectID);
@@ -144,24 +148,32 @@ async function main() {
             
             // Step 2: Check if project ID has changed or initial load is not complete
             if (newState.project && (newState.project !== currentProjectID || !newState.initialLoadComplete)) {
-                const projectFolder = findProjectFolder(allEntries, newState.project);
+                // const projectFolder = findProjectFolder(allEntries, newState.project);
+                const googleDriveProject = await fetchGoogleDriveProjectFolder( currentProjectID );
                 
-                if (projectFolder) {
-                    const projectContents = await fetchChildProject(newState.project, projectFolder);
+                newState.initialLoadComplete = true;
+
+                state.setState({
+                    ...newState,
+                    ...googleDriveProject
+                });
+                // if (projectFolder) {
+                //     const projectContents = await fetchChildProject(newState.project, projectFolder);
                     
-                    if (projectContents) {
-                        state.setState({
-                            ...newState,
-                            ...projectContents
-                        });
-                    } else {
-                        console.log(`Root folder for project ID ${newState.project} not found in structured contents`);
-                        state.setState({ ...newState, initialLoadComplete: true });
-                    }
-                } else {
-                    console.log(`Project folder for ID ${newState.project} not found`);
-                    state.setState({ ...newState, initialLoadComplete: true });
-                }
+                //     if (projectContents) {
+
+                        
+
+
+
+                //     } else {
+                //         console.log(`Root folder for project ID ${newState.project} not found in structured contents`);
+                //         state.setState({ ...newState, initialLoadComplete: true });
+                //     }
+                // } else {
+                //     console.log(`Project folder for ID ${newState.project} not found`);
+                //     state.setState({ ...newState, initialLoadComplete: true });
+                // }
             }
             
             handleStateChange();

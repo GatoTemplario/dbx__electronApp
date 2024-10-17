@@ -1,4 +1,4 @@
-import { fetchChildProject } from './fetch';
+import { fetchChildProject, fetchGoogleDriveProjectFolder  } from './fetch';
 import { state } from './state';
 import { ref, set } from 'firebase/database';
 import { rtdb } from '../logic/db';
@@ -30,10 +30,15 @@ async function simplifiedSync() {
       return;
     }
     
-    const newDropboxEntries = await fetchChildProject(projectId, currentState.tree);
+    // const newDropboxEntries = await fetchChildProject(projectId, currentState.tree);
+    const newGDriveEntries = await fetchGoogleDriveProjectFolder(projectId);
+    // console.log("newGDriveEntries", newGDriveEntries);
+    // console.log("newDropboxEntries", newDropboxEntries);
+    
     
     // Merge the new structure with the existing one
-    const mergedStructure = mergeStructures(newDropboxEntries.tree, currentState.tree);
+    // const mergedStructure = mergeStructures(newDropboxEntries.tree, currentState.tree);
+    const mergedStructure = mergeStructures(newGDriveEntries, currentState.tree);
 
     // Update RTDB
     const dbRef = ref(rtdb, `fileStructure/${projectId}`);
@@ -70,16 +75,16 @@ function mergeStructures(dropboxStructure: any, rtdbStructure: any): any {
   mergeProperties(mergedStructure, rtdbStructure);
 
   // Recursively merge folders
-  mergedStructure.folders = mergedStructure.folders.map((dropboxFolder: any) => {
+  mergedStructure.folders? mergedStructure.folders.map((dropboxFolder: any) => {
     const rtdbFolder = rtdbStructure.folders.find((f: any) => f.id === dropboxFolder.id);
     return rtdbFolder ? mergeStructures(dropboxFolder, rtdbFolder) : dropboxFolder;
-  });
+  }) : null;
 
   // Merge files
-  mergedStructure.files = mergedStructure.files.map((dropboxFile: any) => {
+  mergedStructure.files? mergedStructure.files.map((dropboxFile: any) => {
     const rtdbFile = rtdbStructure.files.find((f: any) => f.id === dropboxFile.id);
     return rtdbFile ? { ...dropboxFile, comment: rtdbFile.comment, active: rtdbFile.active } : dropboxFile;
-  });
+  }) : null;
 
   return mergedStructure;
 }
