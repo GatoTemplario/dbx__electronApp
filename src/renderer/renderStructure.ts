@@ -63,6 +63,7 @@ export function populateFileList(structure, level = 0, parentPath = '') {
     const row  = document.createElement('tr');
     const path = parentPath ? `${parentPath}/${item.name}` : item.name;
     var nameWithoutExtension = item.name;
+    
     row.dataset.itemType = itemType;
     row.dataset.folderId = item.id;  
 
@@ -87,7 +88,7 @@ export function populateFileList(structure, level = 0, parentPath = '') {
     // Create the icon
     const icon = document.createElement('span');
     icon.classList.add('file-icon');
-    icon.innerHTML = getFileIcon(itemType);
+    icon.innerHTML = getFileIcon(item.extension);
 
     const bytesToMb = item.size ? (item.size / 1024 / 1024).toFixed(2) + " MB" : "-";
   
@@ -119,7 +120,7 @@ export function populateFileList(structure, level = 0, parentPath = '') {
 
     row.innerHTML = `
     <td class="name-cell ${indentClass} ${fileIndentClass}"></td>
-    <td>${itemType}</td>
+    <td>${item.extension}</td>
     <td class="size-cell">${(bytesToMb)|| '-'}</td>
     <td></td>
     <td class="deprecated-cell">
@@ -227,12 +228,6 @@ export function populateFileList(structure, level = 0, parentPath = '') {
 
 
 function openFileOrFolder(item) {
-  console.log("openFileOrFolder:", item);
-  
-  const currentState = state.getState();
-  // const projectPath = currentState.tree.path;
-  console.log("item:", item);
-  
   if (item.folders || item.files) {
     let fullPath = path.join(DESKTOP_PATH, `${item.path}` || '');
     // It's a folder
@@ -243,10 +238,6 @@ function openFileOrFolder(item) {
     });
   } else {
     // It's a file
-    // console.log("fullPath:", fullPath);
-    
-    
-    
     let fileFullPath = path.join(DESKTOP_PATH, `${item.path_lower}`);
     console.log("fullPath:", fileFullPath);
     
@@ -575,18 +566,15 @@ function setTitle() {
   if(titleDisplay.textContent !== nombreProjecto) {
     titleDisplay.textContent = nombreProjecto;
   }else{
-    // console.log("vamos siempre por aqui??");
-    // console.log(currentState.tree.name);
-    
     titleDisplay.textContent = " - " + fullNombreProjecto;
   }
 }
 
 function initSettingsDialog() {
-  const settingsBtn = document.getElementById('settingsBtn');
-  const settingsDialog = document.getElementById('settingsDialog');
+  const settingsBtn      = document.getElementById('settingsBtn');
+  const settingsDialog   = document.getElementById('settingsDialog');
   const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-  const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+  const saveSettingsBtn  = document.getElementById('saveSettingsBtn');
   const projectPathInput = document.getElementById('projectPathInput') as HTMLInputElement;
 
   settingsBtn.addEventListener('click', () => {
